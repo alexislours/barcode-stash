@@ -1,0 +1,236 @@
+import SwiftData
+import SwiftUI
+import UIKit
+
+struct HistoryView: View {
+    @Environment(\.modelContext) var modelContext
+    @Query(sort: \ScannedBarcode.timestamp, order: .reverse) var barcodes: [ScannedBarcode]
+    @Binding var selectedBarcode: ScannedBarcode?
+    @Binding var isSelectMode: Bool
+    @State private var searchText = ""
+    @State private var filterFavorites = false
+    @State private var sourceFilter: HistorySourceFilter = .all
+    @State private var selectedTag: String?
+
+    // Batch operations
+    @State var editMode: EditMode = .inactive
+    @State var selectedBarcodeIDs: Set<PersistentIdentifier> = []
+    @State var showBatchDeleteConfirmation = false
+    @State var showBatchTagSheet = false
+    @State var batchTagText = ""
+    @State var batchExportFileURL: URL?
+    @State var exportError: String?
+    @State private var shareBarcode: ScannedBarcode?
+
+    var isEditing: Bool {
+        editMode == .active
+    }
+
+    private var allTags: [String] {
+        Array(Set(barcodes.flatMap(\.tags))).sorted()
+    }
+
+    private var activeFilterCount: Int {
+        (filterFavorites ? 1 : 0)
+            + (sourceFilter != .all ? 1 : 0)
+            + (selectedTag != nil ? 1 : 0)
+    }
+
+    private var isFiltering: Bool {
+        filterFavorites || sourceFilter != .all || selectedTag != nil
+    }
+
+    private var filteredBarcodes: [ScannedBarcode] {
+        var result = barcodes
+
+        if !searchText.isEmpty {
+            result = result.filter { barcode in
+                barcode.rawValue.localizedCaseInsensitiveContains(searchText)
+                    || barcode.type.rawValue.localizedCaseInsensitiveContains(searchText)
+                    || (barcode.barcodeDescription?.localizedCaseInsensitiveContains(searchText) ?? false)
+                    || barcode.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            }
+        }
+
+        switch sourceFilter {
+        case .all: break
+        case .scanned: result = result.filter { !$0.isGenerated }
+        case .generated: result = result.filter(\.isGenerated)
+        }
+
+        if filterFavorites {
+            result = result.filter(\.isFavorite)
+        }
+
+        if let tag = selectedTag {
+            result = result.filter { $0.tags.contains(tag) }
+        }
+
+        return result
+    }
+
+    private var groupedByDay: [(date: Date, barcodes: [ScannedBarcode])] {
+        let calendar = Calendar.current
+        let grouped = Dictionary(grouping: filteredBarcodes) { barcode in
+            calendar.startOfDay(for: barcode.timestamp)
+        }
+        return grouped
+            .sorted { $0.key > $1.key }
+            .map { (date: $0.key, barcodes: $0.value) }
+    }
+
+    private func sectionHeader(for date: Date) -> String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) {
+            return String(localized: "Today", comment: "History section header: today's date")
+        } else if calendar.isDateInYesterday(date) {
+            return String(localized: "Yesterday", comment: "History section header: yesterday's date")
+        } else {
+            return date.formatted(.dateTime.month(.wide).day().year())
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            barcodeList
+                .alert("Delete Selected", isPresented: $showBatchDeleteConfirmation) {
+                    Button("Delete \(selectedBarcodeIDs.count)", role: .destructive) {
+                        batchDelete()
+                    }
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("Delete \(selectedBarcodeIDs.count) barcodes? This cannot be undone.")
+                }
+                .sheet(isPresented: $showBatchTagSheet) {
+                    batchTagSheet
+                }
+                .sheet(item: $batchExportFileURL) { url in
+                    ShareSheetView(items: [url])
+                }
+                .sheet(item: $shareBarcode) { barcode in
+                    ShareBarcodeSheet(barcode: barcode)
+                }
+                .alert("Export Failed", isPresented: Binding(
+                    get: { exportError != nil },
+                    set: { if !$0 { exportError = nil } }
+                )) {
+                    Button("OK") { exportError = nil }
+                } message: {
+                    Text(exportError ?? "")
+                }
+                .onChange(of: searchText) {
+                    selectedBarcodeIDs.removeAll()
+                }
+                .onChange(of: filterFavorites) {
+                    selectedBarcodeIDs.removeAll()
+                }
+                .onChange(of: sourceFilter) {
+                    selectedBarcodeIDs.removeAll()
+                }
+                .onChange(of: selectedTag) {
+                    selectedBarcodeIDs.removeAll()
+                }
+                .onChange(of: isEditing) {
+                    isSelectMode = isEditing
+                }
+        }
+    }
+
+    private var barcodeList: some View {
+        List(selection: isEditing ? $selectedBarcodeIDs : nil) {
+            ForEach(groupedByDay, id: \.date) { group in
+                Section(sectionHeader(for: group.date)) {
+                    ForEach(group.barcodes) { barcode in
+                        BarcodeRowView(
+                            barcode: barcode,
+                            shareBarcode: $shareBarcode
+                        )
+                        .tag(barcode.persistentModelID)
+                    }
+                    .onDelete { offsets in
+                        deleteBarcodes(at: offsets, from: group.barcodes)
+                    }
+                }
+            }
+        }
+        .environment(\.editMode, $editMode)
+        .searchable(text: $searchText, prompt: "Search barcodes")
+        .navigationTitle("History")
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                selectButton
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                if isEditing {
+                    EmptyView()
+                } else {
+                    trailingToolbar
+                }
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if isEditing {
+                batchToolbar
+                    .padding(.horizontal)
+                    .padding(.vertical, 10)
+                    .background(.bar)
+            }
+        }
+        .navigationDestination(item: $selectedBarcode) { barcode in
+            BarcodeDetailView(barcode: barcode)
+        }
+        .overlay {
+            emptyStateOverlay
+        }
+    }
+
+    // MARK: - Trailing Toolbar
+
+    private var trailingToolbar: some View {
+        HStack(spacing: 12) {
+            NavigationLink {
+                StatsView()
+            } label: {
+                Image(systemName: "chart.bar")
+            }
+            .disabled(barcodes.isEmpty)
+            .accessibilityLabel(String(
+                localized: "Statistics",
+                comment: "History: stats navigation link"
+            ))
+            .accessibilityIdentifier("statistics-button")
+
+            HistoryFilterMenu(
+                sourceFilter: $sourceFilter,
+                filterFavorites: $filterFavorites,
+                selectedTag: $selectedTag,
+                allTags: allTags,
+                isFiltering: isFiltering,
+                activeFilterCount: activeFilterCount
+            )
+        }
+    }
+
+    // MARK: - Empty State
+
+    @ViewBuilder
+    private var emptyStateOverlay: some View {
+        if barcodes.isEmpty {
+            ContentUnavailableView(
+                "No Barcodes",
+                systemImage: "barcode.viewfinder",
+                description: Text("Scanned and created barcodes will appear here.")
+            )
+        } else if filteredBarcodes.isEmpty {
+            if isFiltering {
+                ContentUnavailableView(
+                    "No Results",
+                    systemImage: "line.3.horizontal.decrease.circle",
+                    description: Text("No barcodes match the active filters.")
+                )
+            } else {
+                ContentUnavailableView.search(text: searchText)
+            }
+        }
+    }
+}

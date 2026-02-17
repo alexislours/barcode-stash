@@ -1,0 +1,27 @@
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.moved-aside
+*.hmap
+DerivedData/
+
+# Build
+build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# App Store screenshots
+AppStoreScreenshots/
+
+# macOS
+.DS_Store
+
+# Claude Code
+.claude/
+CLAUDE.md
+
+.build/

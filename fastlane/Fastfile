@@ -1,0 +1,32 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Capture App Store screenshots with mock data"
+  lane :screenshots do
+    device = "iPhone 17 Pro Max"
+    cache_screenshots = File.expand_path("~/Library/Caches/tools.fastlane/screenshots")
+    output = "./screenshots"
+
+    FileUtils.rm_rf(output)
+    FileUtils.rm_rf(cache_screenshots)
+
+    scan(
+      project: "barcodes.xcodeproj",
+      scheme: "barcodes",
+      devices: [device],
+      only_testing: ["barcodesUITests/ScreenshotTests/testScreenshots"],
+      derived_data_path: "./build",
+      clean: false,
+      result_bundle: true,
+      output_types: "",
+      xcargs: "-parallel-testing-enabled NO",
+      disable_xcpretty: true,
+    )
+
+    if Dir.exist?(cache_screenshots)
+      FileUtils.cp_r("#{cache_screenshots}/.", output)
+    end
+
+    sh("open #{output}")
+  end
+end

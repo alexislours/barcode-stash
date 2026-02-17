@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: brew install swiftlint
+
+      - name: SwiftLint
+        run: make lint
+
+      - name: SwiftFormat check
+        run: make format-check
+
+  test:
+    needs: lint
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run unit tests
+        run: make test-ci
