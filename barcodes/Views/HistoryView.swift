@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftData
 import SwiftUI
 import UIKit
@@ -21,6 +22,13 @@ struct HistoryView: View {
     @State var batchExportFileURL: URL?
     @State var exportError: String?
     @State private var shareBarcode: ScannedBarcode?
+
+    // Image scanning
+    @State private var selectedPhotoItems: [PhotosPickerItem] = []
+    @State private var imageScanResults: [DetectedBarcode] = []
+    @State private var showImageScanResults = false
+    @State private var isImageScanning = false
+    @State private var showNoBarcodeAlert = false
 
     var isEditing: Bool {
         editMode == .active
@@ -133,6 +141,31 @@ struct HistoryView: View {
                 .onChange(of: isEditing) {
                     isSelectMode = isEditing
                 }
+                .onChange(of: selectedPhotoItems) {
+                    guard !selectedPhotoItems.isEmpty else { return }
+                    let items = selectedPhotoItems
+                    selectedPhotoItems = []
+                    Task {
+                        await processSelectedPhotos(items)
+                    }
+                }
+                .sheet(isPresented: $showImageScanResults) {
+                    ImageScanResultsView(detectedBarcodes: imageScanResults)
+                }
+                .alert(
+                    String(
+                        localized: "No Barcodes Found",
+                        comment: "Image scan: no results alert title"
+                    ),
+                    isPresented: $showNoBarcodeAlert
+                ) {
+                    Button("OK") {}
+                } message: {
+                    Text(
+                        "No supported barcodes were detected in this image.",
+                        comment: "Image scan: no results alert message"
+                    )
+                }
         }
     }
 
@@ -188,6 +221,27 @@ struct HistoryView: View {
 
     private var trailingToolbar: some View {
         HStack(spacing: 12) {
+            PhotosPicker(selection: $selectedPhotoItems, matching: .images) {
+                if isImageScanning {
+                    ProgressView()
+                } else {
+                    Image(systemName: "photo.on.rectangle.angled")
+                }
+            }
+            .disabled(isImageScanning)
+            .accessibilityLabel(
+                String(
+                    localized: "Scan from image",
+                    comment: "History: scan barcode from photo library"
+                )
+            )
+            .accessibilityHint(
+                String(
+                    localized: "Opens photo picker to scan barcodes from an image",
+                    comment: "History: scan from image button hint"
+                )
+            )
+
             NavigationLink {
                 StatsView()
             } label: {
@@ -231,6 +285,50 @@ struct HistoryView: View {
             } else {
                 ContentUnavailableView.search(text: searchText)
             }
+        }
+    }
+
+    // MARK: - Image Scanning
+
+    private func processSelectedPhotos(_ items: [PhotosPickerItem]) async {
+        isImageScanning = true
+        defer { isImageScanning = false }
+
+        var allDetected: [DetectedBarcode] = []
+        var seen = Set<String>()
+
+        for item in items {
+            guard let data = try? await item.loadTransferable(type: Data.self),
+                  let image = UIImage(data: data),
+                  let cgImage = image.cgImage
+            else { continue }
+
+            // Use photo EXIF GPS if available
+            let coordinates = ImageBarcodeScanner.extractGPSCoordinates(from: data)
+
+            let detected = await (try? Task.detached {
+                try ImageBarcodeScanner.detectBarcodes(in: cgImage)
+            }.value) ?? []
+
+            for barcode in detected {
+                let key = "\(barcode.type.rawValue)|\(barcode.rawValue)"
+                if seen.insert(key).inserted {
+                    allDetected.append(DetectedBarcode(
+                        rawValue: barcode.rawValue,
+                        type: barcode.type,
+                        descriptorArchive: barcode.descriptorArchive,
+                        latitude: coordinates?.latitude,
+                        longitude: coordinates?.longitude
+                    ))
+                }
+            }
+        }
+
+        if allDetected.isEmpty {
+            showNoBarcodeAlert = true
+        } else {
+            imageScanResults = allDetected
+            showImageScanResults = true
         }
     }
 }
