@@ -16,7 +16,7 @@ struct ContentView: View {
                             Button {
                                 showScanner = true
                             } label: {
-                                Image(systemName: "plus")
+                                Image(systemName: "barcode.viewfinder")
                                     .font(.title2.weight(.semibold))
                                     .foregroundStyle(.white)
                                     .frame(width: 56, height: 56)
