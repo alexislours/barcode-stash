@@ -152,36 +152,48 @@ struct EmailParsingTests {
 @Suite("SMS Parsing")
 struct SMSParsingTests {
     @Test func parsesSms() {
-        guard case .sms(let recipient, let body) =
+        guard case .sms(let recipients, let body) =
             BarcodePayloadParser.parse(rawValue: "sms:+15551234567", type: type)
         else {
             Issue.record("Expected .sms")
             return
         }
-        #expect(recipient == "+15551234567")
+        #expect(recipients == ["+15551234567"])
         #expect(body == nil)
     }
 
     @Test func parsesSmsWithBody() {
         let input = "sms:+15551234567?body=Hello"
-        guard case .sms(let recipient, let body) =
+        guard case .sms(let recipients, let body) =
             BarcodePayloadParser.parse(rawValue: input, type: type)
         else {
             Issue.record("Expected .sms")
             return
         }
-        #expect(recipient == "+15551234567")
+        #expect(recipients == ["+15551234567"])
         #expect(body == "Hello")
     }
 
     @Test func parsesSmsto() {
-        guard case .sms(let recipient, _) =
+        guard case .sms(let recipients, _) =
             BarcodePayloadParser.parse(rawValue: "smsto:+15551234567", type: type)
         else {
             Issue.record("Expected .sms")
             return
         }
-        #expect(recipient == "+15551234567")
+        #expect(recipients == ["+15551234567"])
+    }
+
+    @Test func parsesMultipleRecipients() {
+        let input = "sms:+15551234567,+15559876543?body=Hey"
+        guard case .sms(let recipients, let body) =
+            BarcodePayloadParser.parse(rawValue: input, type: type)
+        else {
+            Issue.record("Expected .sms")
+            return
+        }
+        #expect(recipients == ["+15551234567", "+15559876543"])
+        #expect(body == "Hey")
     }
 
     @Test func caseInsensitivePrefix() {
@@ -209,13 +221,13 @@ struct SMSParsingTests {
 
     @Test func handlesQuestionMarkInBody() {
         let input = "sms:+15551234567?body=Are you there?"
-        guard case .sms(let recipient, let body) =
+        guard case .sms(let recipients, let body) =
             BarcodePayloadParser.parse(rawValue: input, type: type)
         else {
             Issue.record("Expected .sms")
             return
         }
-        #expect(recipient == "+15551234567")
+        #expect(recipients == ["+15551234567"])
         #expect(body == "Are you there?")
     }
 }
@@ -374,6 +386,26 @@ struct CalendarEventParsingTests {
         }
         #expect(raw == input)
     }
+
+    @Test func parsesVCalendarWrappedEvent() {
+        let input = """
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            BEGIN:VEVENT
+            SUMMARY:Team Standup
+            DTSTART:20250301T090000Z
+            DTEND:20250301T093000Z
+            END:VEVENT
+            END:VCALENDAR
+            """
+        guard case .calendarEvent(let raw) =
+            BarcodePayloadParser.parse(rawValue: input, type: type)
+        else {
+            Issue.record("Expected .calendarEvent")
+            return
+        }
+        #expect(raw == input)
+    }
 }
 
 // MARK: - Geo
@@ -492,7 +524,7 @@ struct PayloadMetadataTests {
             .url(URL(string: "https://example.com")!),
             .phone(number: "123"),
             .email(recipient: "a@b.com", subject: nil, body: nil),
-            .sms(recipient: "123", body: nil),
+            .sms(recipients: ["123"], body: nil),
             .wifi(ssid: "Net", password: nil, encryption: nil),
             .vCard("BEGIN:VCARD\nEND:VCARD"),
             .calendarEvent("BEGIN:VEVENT\nEND:VEVENT"),

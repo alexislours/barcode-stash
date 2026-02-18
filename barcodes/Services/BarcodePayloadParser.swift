@@ -1,14 +1,41 @@
 import Foundation
+import SwiftUI
 
 enum ParsedPayload {
     case url(URL)
     case phone(number: String)
     case email(recipient: String, subject: String?, body: String?)
-    case sms(recipient: String, body: String?)
+    case sms(recipients: [String], body: String?)
     case wifi(ssid: String, password: String?, encryption: String?)
     case vCard(String)
     case calendarEvent(String)
     case geo(latitude: Double, longitude: Double, label: String?)
+
+    var title: String {
+        switch self {
+        case .url: String(localized: "Website", comment: "Action card title for URL payload")
+        case .phone: String(localized: "Phone Number", comment: "Action card title for phone payload")
+        case .email: String(localized: "Email", comment: "Action card title for email payload")
+        case .sms: String(localized: "Message", comment: "Action card title for SMS payload")
+        case .wifi: String(localized: "Wi-Fi Network", comment: "Action card title for WiFi payload")
+        case .vCard: String(localized: "Contact Card", comment: "Action card title for vCard payload")
+        case .calendarEvent: String(localized: "Calendar Event", comment: "Action card title for calendar payload")
+        case .geo: String(localized: "Location", comment: "Action card title for geo payload")
+        }
+    }
+
+    var tintColor: Color {
+        switch self {
+        case .url: .blue
+        case .phone: .green
+        case .email: .blue
+        case .sms: .green
+        case .wifi: .purple
+        case .vCard: .teal
+        case .calendarEvent: .red
+        case .geo: .orange
+        }
+    }
 
     var actionLabel: String {
         switch self {
@@ -30,8 +57,8 @@ enum ParsedPayload {
         case .email: "envelope.fill"
         case .sms: "message.fill"
         case .wifi: "wifi"
-        case .vCard: "person.crop.circle.badge.plus"
-        case .calendarEvent: "calendar.badge.plus"
+        case .vCard: "person.crop.circle.fill"
+        case .calendarEvent: "calendar"
         case .geo: "map.fill"
         }
     }
@@ -47,7 +74,8 @@ enum BarcodePayloadParser {
             return .vCard(trimmed)
         }
 
-        if trimmed.uppercased().hasPrefix("BEGIN:VEVENT") {
+        if trimmed.uppercased().hasPrefix("BEGIN:VEVENT")
+            || trimmed.uppercased().hasPrefix("BEGIN:VCALENDAR") {
             return .calendarEvent(trimmed)
         }
 
@@ -136,16 +164,30 @@ enum BarcodePayloadParser {
         guard lower.hasPrefix("sms:") || lower.hasPrefix("smsto:") else { return nil }
         let prefix = lower.hasPrefix("smsto:") ? 6 : 4
         let rest = String(value.dropFirst(prefix))
+        // Try query-string format first: sms:number?body=message
         let parts = rest.components(separatedBy: "?")
-        let recipient = parts[0]
-        guard !recipient.isEmpty else { return nil }
+        let recipientPart = parts[0]
         var body: String?
         if parts.count > 1 {
             let queryString = parts.dropFirst().joined(separator: "?")
             let params = URLComponents(string: "?\(queryString)")?.queryItems ?? []
             body = params.first(where: { $0.name == "body" })?.value
         }
-        return .sms(recipient: recipient, body: body)
+        // Fall back to colon-separated format: SMSTO:number:message
+        var recipientString = recipientPart
+        if body == nil, let colonIndex = recipientPart.firstIndex(of: ":") {
+            recipientString = String(recipientPart[recipientPart.startIndex ..< colonIndex])
+            let messageStart = recipientPart.index(after: colonIndex)
+            if messageStart < recipientPart.endIndex {
+                body = String(recipientPart[messageStart...])
+            }
+        }
+        let recipients = recipientString
+            .components(separatedBy: ",")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        guard !recipients.isEmpty else { return nil }
+        return .sms(recipients: recipients, body: body)
     }
 
     private static func parseGeo(_ value: String) -> ParsedPayload? {
