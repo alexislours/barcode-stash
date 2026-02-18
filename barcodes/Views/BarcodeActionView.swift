@@ -1,31 +1,30 @@
 import Contacts
 import EventKit
 import MessageUI
-import NetworkExtension
 import SwiftUI
 
 struct BarcodeActionView: View {
     let payload: ParsedPayload
-    @State private var wifiStatus: String?
     @State private var showingMessageCompose = false
+
+    private var hasAction: Bool {
+        if case .wifi = payload { return false }
+        return true
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             detailSection
 
-            Button {
-                performAction()
-            } label: {
-                Label(payload.actionLabel, systemImage: payload.systemImage)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .accessibilityIdentifier("payload-action-button")
-
-            if let wifiStatus {
-                Text(wifiStatus)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            if hasAction {
+                Button {
+                    performAction()
+                } label: {
+                    Label(payload.actionLabel, systemImage: payload.systemImage)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("payload-action-button")
             }
         }
         .padding(12)
@@ -121,8 +120,8 @@ struct BarcodeActionView: View {
             if MFMessageComposeViewController.canSendText() {
                 showingMessageCompose = true
             }
-        case let .wifi(ssid, password, encryption):
-            joinWifi(ssid: ssid, password: password, encryption: encryption)
+        case .wifi:
+            break
         case let .vCard(raw):
             addContact(vCardString: raw)
         case let .calendarEvent(raw):
@@ -157,24 +156,6 @@ struct BarcodeActionView: View {
         let urlString = "maps:?q=\(encoded)&ll=\(latitude),\(longitude)"
         if let url = URL(string: urlString) {
             UIApplication.shared.open(url)
-        }
-    }
-
-    private func joinWifi(ssid: String, password: String?, encryption: String?) {
-        let isWEP = encryption?.uppercased() == "WEP"
-        let config = NEHotspotConfiguration(
-            ssid: ssid, passphrase: password ?? "", isWEP: isWEP
-        )
-        Task {
-            do {
-                try await NEHotspotConfigurationManager.shared.apply(config)
-                wifiStatus = String(
-                    localized: "Connected to \(ssid)",
-                    comment: "Wi-Fi connection success message showing network name"
-                )
-            } catch {
-                wifiStatus = error.localizedDescription
-            }
         }
     }
 
