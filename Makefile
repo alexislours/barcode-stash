@@ -1,16 +1,16 @@
 .PHONY: lint lint-fix format format-check build test test-ci
 
 lint:
-	swiftlint lint barcodes/
+	swiftlint lint barcodes/ ShareExtension/
 
 lint-fix:
-	swiftlint lint --fix barcodes/
+	swiftlint lint --fix barcodes/ ShareExtension/
 
 format:
-	swiftformat barcodes/
+	swiftformat barcodes/ ShareExtension/
 
 format-check:
-	swiftformat --lint barcodes/
+	swiftformat --lint barcodes/ ShareExtension/
 
 build:
 	xcodebuild build-for-testing -project barcodes.xcodeproj -scheme barcodes \

@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Scan barcodes from photo library images via `PhotosPicker` in `HistoryView`
+- `ImageBarcodeScanner` service using `VNDetectBarcodesRequest` to detect all 11 supported symbologies from `CGImage` input
+- `BarcodeType.init?(symbology:)` initializer mapping `VNBarcodeSymbology` to `BarcodeType`
+- EXIF GPS extraction from photo data via `CGImageSource` properties (`kCGImagePropertyGPSDictionary`), detected barcodes inherit the photo's coordinates
+- `CIBarcodeDescriptor` archiving from Vision observations for pixel-identical re-rendering of scanned image barcodes
+- `ImageScanResultsView` presenting detected barcodes with live preview, payload parsing, duplicate detection against existing SwiftData records, and selectable bulk save
+- Multi-image selection support with cross-image deduplication by type + raw value
+- `ProgressView` inline loading indicator during image scanning
+- Localized strings for image scanning UI across all 10 supported languages
+- Share Extension accepting images from the system share sheet, copies images to an app group shared directory and opens the main app to scan them
+- `barcode-stash://` custom URL scheme for deep linking from the Share Extension
+- App group entitlement (`group.com.alexislours.barcodes-app`) for data sharing between the main app and the Share Extension
+- Automatic shared image detection on `scenePhase` change to `.active` as a fallback when the URL scheme callback is missed
+- `ImageBarcodeScanner.detectBarcodes(from:)` convenience that downsamples, extracts GPS, and detects in one pass
+- `ImageBarcodeScanner.downsampledCGImage(from:maxPixelSize:)` for memory-efficient image loading via `CGImageSourceCreateThumbnailAtIndex`
+- Stale file cleanup in the Share Extension shared directory (files older than 1 hour)
+
+### Changed
+
+- Scanner floating action button icon from `plus` to `barcode.viewfinder` in `ContentView`
+- Photo library scanning now uses `Data`-based pipeline with downsampling instead of loading full `UIImage` into memory
+- Lint and format Makefile targets now include `ShareExtension/` directory
+- `CURRENT_PROJECT_VERSION` and `MARKETING_VERSION` moved from target-level to project-level build settings
+
 ## [1.0.0] (2026021701) - 2026-02-17
 
 ### Added

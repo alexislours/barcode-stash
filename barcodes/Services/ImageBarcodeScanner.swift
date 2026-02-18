@@ -1,5 +1,4 @@
 import ImageIO
-import UIKit
 import Vision
 
 struct DetectedBarcode: Sendable, Identifiable {
@@ -49,6 +48,31 @@ enum ImageBarcodeScanner {
             return DetectedBarcode(
                 rawValue: payload, type: type, descriptorArchive: archive,
                 latitude: nil, longitude: nil
+            )
+        }
+    }
+
+    /// Creates a downsampled CGImage suitable for Vision without decoding the full bitmap.
+    nonisolated static func downsampledCGImage(from data: Data, maxPixelSize: Int = 4096) -> CGImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageSourceThumbnailMaxPixelSize: maxPixelSize,
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+        ]
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+    }
+
+    /// Downsamples image data, extracts GPS coordinates, and detects barcodes in one pass.
+    nonisolated static func detectBarcodes(from data: Data, maxPixelSize: Int = 4096) throws -> [DetectedBarcode] {
+        guard let cgImage = downsampledCGImage(from: data, maxPixelSize: maxPixelSize) else { return [] }
+        let coordinates = extractGPSCoordinates(from: data)
+        let barcodes = try detectBarcodes(in: cgImage)
+        return barcodes.map { barcode in
+            DetectedBarcode(
+                rawValue: barcode.rawValue, type: barcode.type,
+                descriptorArchive: barcode.descriptorArchive,
+                latitude: coordinates?.latitude, longitude: coordinates?.longitude
             )
         }
     }
