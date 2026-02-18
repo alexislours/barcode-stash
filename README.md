@@ -28,6 +28,7 @@ A native iOS app to scan, generate, and organize barcodes - with iCloud sync, sm
 ## Features
 
 - Scan barcodes using your device camera with instant recognition
+- Scan barcodes from photos in your library or shared from other apps
 - Generate barcodes across 11 different formats with live preview
 - Organize with favorites, tags, notes, and full-text search
 - View scanned barcodes on a map with automatic reverse geocoding

@@ -1,12 +1,13 @@
+import PhotosUI
 import SwiftData
 import SwiftUI
-import UIKit
 
 struct HistoryView: View {
     @Environment(\.modelContext) var modelContext
     @Query(sort: \ScannedBarcode.timestamp, order: .reverse) var barcodes: [ScannedBarcode]
     @Binding var selectedBarcode: ScannedBarcode?
     @Binding var isSelectMode: Bool
+    @Binding var pendingSharedImageScan: Bool
     @State private var searchText = ""
     @State private var filterFavorites = false
     @State private var sourceFilter: HistorySourceFilter = .all
@@ -21,6 +22,13 @@ struct HistoryView: View {
     @State var batchExportFileURL: URL?
     @State var exportError: String?
     @State private var shareBarcode: ScannedBarcode?
+
+    // Image scanning
+    @State private var selectedPhotoItems: [PhotosPickerItem] = []
+    @State private var imageScanResults: [DetectedBarcode] = []
+    @State private var showImageScanResults = false
+    @State private var isImageScanning = false
+    @State private var showNoBarcodeAlert = false
 
     var isEditing: Bool {
         editMode == .active
@@ -133,6 +141,41 @@ struct HistoryView: View {
                 .onChange(of: isEditing) {
                     isSelectMode = isEditing
                 }
+                .onChange(of: selectedPhotoItems) {
+                    guard !selectedPhotoItems.isEmpty else { return }
+                    let items = selectedPhotoItems
+                    selectedPhotoItems = []
+                    Task {
+                        await processSelectedPhotos(items)
+                    }
+                }
+                .sheet(isPresented: $showImageScanResults) {
+                    ImageScanResultsView(detectedBarcodes: imageScanResults)
+                }
+                .alert(
+                    String(
+                        localized: "No Barcodes Found",
+                        comment: "Image scan: no results alert title"
+                    ),
+                    isPresented: $showNoBarcodeAlert
+                ) {
+                    Button("OK") {}
+                } message: {
+                    Text(
+                        "No supported barcodes were detected in this image.",
+                        comment: "Image scan: no results alert message"
+                    )
+                }
+                .onChange(of: pendingSharedImageScan) {
+                    guard pendingSharedImageScan else { return }
+                    pendingSharedImageScan = false
+                    Task { await processSharedImages() }
+                }
+                .onAppear {
+                    guard pendingSharedImageScan else { return }
+                    pendingSharedImageScan = false
+                    Task { await processSharedImages() }
+                }
         }
     }
 
@@ -188,6 +231,27 @@ struct HistoryView: View {
 
     private var trailingToolbar: some View {
         HStack(spacing: 12) {
+            PhotosPicker(selection: $selectedPhotoItems, matching: .images) {
+                if isImageScanning {
+                    ProgressView()
+                } else {
+                    Image(systemName: "photo.on.rectangle.angled")
+                }
+            }
+            .disabled(isImageScanning)
+            .accessibilityLabel(
+                String(
+                    localized: "Scan from image",
+                    comment: "History: scan barcode from photo library"
+                )
+            )
+            .accessibilityHint(
+                String(
+                    localized: "Opens photo picker to scan barcodes from an image",
+                    comment: "History: scan from image button hint"
+                )
+            )
+
             NavigationLink {
                 StatsView()
             } label: {
@@ -232,5 +296,82 @@ struct HistoryView: View {
                 ContentUnavailableView.search(text: searchText)
             }
         }
+    }
+
+    // MARK: - Image Scanning
+
+    private func presentScanResults(_ results: [DetectedBarcode]) {
+        if results.isEmpty {
+            showNoBarcodeAlert = true
+        } else {
+            imageScanResults = results
+            showImageScanResults = true
+        }
+    }
+
+    private func processSelectedPhotos(_ items: [PhotosPickerItem]) async {
+        isImageScanning = true
+        defer { isImageScanning = false }
+
+        var allDetected: [DetectedBarcode] = []
+        var seen = Set<String>()
+
+        for item in items {
+            guard let data = try? await item.loadTransferable(type: Data.self) else { continue }
+
+            let detected = await (try? Task.detached {
+                try ImageBarcodeScanner.detectBarcodes(from: data)
+            }.value) ?? []
+
+            for barcode in detected {
+                let key = "\(barcode.type.rawValue)|\(barcode.rawValue)"
+                if seen.insert(key).inserted {
+                    allDetected.append(barcode)
+                }
+            }
+        }
+
+        presentScanResults(allDetected)
+    }
+
+    // MARK: - Shared Image Scanning (Share Extension)
+
+    private func processSharedImages() async {
+        guard let containerURL = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: "group.com.alexislours.barcodes-app"
+        ) else { return }
+
+        let sharedDir = containerURL.appendingPathComponent("SharedImages", isDirectory: true)
+        guard let files = try? FileManager.default.contentsOfDirectory(
+            at: sharedDir, includingPropertiesForKeys: nil
+        ), !files.isEmpty else { return }
+
+        isImageScanning = true
+        defer { isImageScanning = false }
+
+        var allDetected: [DetectedBarcode] = []
+        var seen = Set<String>()
+
+        for fileURL in files {
+            guard let data = try? Data(contentsOf: fileURL) else {
+                try? FileManager.default.removeItem(at: fileURL)
+                continue
+            }
+
+            let detected = await (try? Task.detached {
+                try ImageBarcodeScanner.detectBarcodes(from: data)
+            }.value) ?? []
+
+            for barcode in detected {
+                let key = "\(barcode.type.rawValue)|\(barcode.rawValue)"
+                if seen.insert(key).inserted {
+                    allDetected.append(barcode)
+                }
+            }
+
+            try? FileManager.default.removeItem(at: fileURL)
+        }
+
+        presentScanResults(allDetected)
     }
 }

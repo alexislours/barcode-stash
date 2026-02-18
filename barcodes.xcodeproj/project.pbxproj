@@ -6,7 +6,18 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3307CF902F44BD5B00BF1C56 /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3307CF862F44BD5B00BF1C56 /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		3307CF8E2F44BD5B00BF1C56 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3326E1432F3A78E100E583EB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3307CF852F44BD5B00BF1C56;
+			remoteInfo = ShareExtension;
+		};
 		3312FFA72F3DF0B000FEB9AE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3326E1432F3A78E100E583EB /* Project object */;
@@ -23,13 +34,46 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		3307CF952F44BD5B00BF1C56 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				3307CF902F44BD5B00BF1C56 /* ShareExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		3307CF862F44BD5B00BF1C56 /* ShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		3312FFA12F3DF0B000FEB9AE /* barcodesUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = barcodesUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3326E14B2F3A78E200E583EB /* barcodes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = barcodes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB01AAA12F40A00100000002 /* barcodesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = barcodesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3307CF912F44BD5B00BF1C56 /* Exceptions for "ShareExtension" folder in "ShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 3307CF852F44BD5B00BF1C56 /* ShareExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		3307CF872F44BD5B00BF1C56 /* ShareExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3307CF912F44BD5B00BF1C56 /* Exceptions for "ShareExtension" folder in "ShareExtension" target */,
+			);
+			path = ShareExtension;
+			sourceTree = "<group>";
+		};
 		3312FFA22F3DF0B000FEB9AE /* barcodesUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = barcodesUITests;
@@ -48,6 +92,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3307CF832F44BD5B00BF1C56 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3312FF9E2F3DF0B000FEB9AE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -78,6 +129,7 @@
 				3326E14D2F3A78E200E583EB /* barcodes */,
 				BB01AAA12F40A00100000003 /* barcodesTests */,
 				3312FFA22F3DF0B000FEB9AE /* barcodesUITests */,
+				3307CF872F44BD5B00BF1C56 /* ShareExtension */,
 				3326E14C2F3A78E200E583EB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,6 +140,7 @@
 				3326E14B2F3A78E200E583EB /* barcodes.app */,
 				BB01AAA12F40A00100000002 /* barcodesTests.xctest */,
 				3312FFA12F3DF0B000FEB9AE /* barcodesUITests.xctest */,
+				3307CF862F44BD5B00BF1C56 /* ShareExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,6 +148,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3307CF852F44BD5B00BF1C56 /* ShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3307CF922F44BD5B00BF1C56 /* Build configuration list for PBXNativeTarget "ShareExtension" */;
+			buildPhases = (
+				3307CF822F44BD5B00BF1C56 /* Sources */,
+				3307CF832F44BD5B00BF1C56 /* Frameworks */,
+				3307CF842F44BD5B00BF1C56 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				3307CF872F44BD5B00BF1C56 /* ShareExtension */,
+			);
+			name = ShareExtension;
+			packageProductDependencies = (
+			);
+			productName = ShareExtension;
+			productReference = 3307CF862F44BD5B00BF1C56 /* ShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		3312FFA02F3DF0B000FEB9AE /* barcodesUITests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3312FFA92F3DF0B000FEB9AE /* Build configuration list for PBXNativeTarget "barcodesUITests" */;
@@ -123,10 +198,12 @@
 				3326E1472F3A78E100E583EB /* Sources */,
 				3326E1482F3A78E100E583EB /* Frameworks */,
 				3326E1492F3A78E100E583EB /* Resources */,
+				3307CF952F44BD5B00BF1C56 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				3307CF8F2F44BD5B00BF1C56 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				3326E14D2F3A78E200E583EB /* barcodes */,
@@ -167,6 +244,9 @@
 				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
+					3307CF852F44BD5B00BF1C56 = {
+						CreatedOnToolsVersion = 26.2;
+					};
 					3312FFA02F3DF0B000FEB9AE = {
 						CreatedOnToolsVersion = 26.2;
 						TestTargetID = 3326E14A2F3A78E100E583EB;
@@ -206,11 +286,19 @@
 				3326E14A2F3A78E100E583EB /* barcodes */,
 				BB01AAA12F40A00100000007 /* barcodesTests */,
 				3312FFA02F3DF0B000FEB9AE /* barcodesUITests */,
+				3307CF852F44BD5B00BF1C56 /* ShareExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3307CF842F44BD5B00BF1C56 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3312FF9F2F3DF0B000FEB9AE /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -235,6 +323,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3307CF822F44BD5B00BF1C56 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3312FF9D2F3DF0B000FEB9AE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -259,6 +354,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		3307CF8F2F44BD5B00BF1C56 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3307CF852F44BD5B00BF1C56 /* ShareExtension */;
+			targetProxy = 3307CF8E2F44BD5B00BF1C56 /* PBXContainerItemProxy */;
+		};
 		3312FFA82F3DF0B000FEB9AE /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 3326E14A2F3A78E100E583EB /* barcodes */;
@@ -272,6 +372,62 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		3307CF932F44BD5B00BF1C56 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2JNW7A7LN3;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ShareExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.alexislours.barcodes-app.ShareExtension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3307CF942F44BD5B00BF1C56 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2JNW7A7LN3;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ShareExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.alexislours.barcodes-app.ShareExtension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		3312FFAA2F3DF0B000FEB9AE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -346,6 +502,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2026021701;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = YA9QGL4W8Z;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -367,6 +524,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -410,6 +568,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2026021701;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = YA9QGL4W8Z;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -425,6 +584,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -442,7 +602,6 @@
 				CODE_SIGN_ENTITLEMENTS = barcodes/barcodes.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2026021701;
 				DEVELOPMENT_TEAM = 2JNW7A7LN3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -465,7 +624,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.alexislours.barcodes-app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -488,7 +646,6 @@
 				CODE_SIGN_ENTITLEMENTS = barcodes/barcodes.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2026021701;
 				DEVELOPMENT_TEAM = 2JNW7A7LN3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -511,7 +668,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
 				NEW_SETTING = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.alexislours.barcodes-app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -571,6 +727,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3307CF922F44BD5B00BF1C56 /* Build configuration list for PBXNativeTarget "ShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3307CF932F44BD5B00BF1C56 /* Debug */,
+				3307CF942F44BD5B00BF1C56 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		3312FFA92F3DF0B000FEB9AE /* Build configuration list for PBXNativeTarget "barcodesUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

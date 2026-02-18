@@ -1,6 +1,7 @@
 import AVFoundation
 import Foundation
 import SwiftData
+import Vision
 
 enum BarcodeType: String, Codable, CaseIterable {
     // swiftlint:disable:next identifier_name
@@ -36,6 +37,24 @@ enum BarcodeType: String, Codable, CaseIterable {
         // Barcode format names are technical and don't need translation,
         // but routed through String(localized:) for consistency.
         String(localized: String.LocalizationValue(rawValue))
+    }
+
+    nonisolated init?(symbology: VNBarcodeSymbology) {
+        let mapping: [VNBarcodeSymbology: BarcodeType] = [
+            .qr: .qr,
+            .ean13: .ean13,
+            .ean8: .ean8,
+            .upce: .upce,
+            .code128: .code128,
+            .code39: .code39,
+            .code93: .code93,
+            .pdf417: .pdf417,
+            .aztec: .aztec,
+            .dataMatrix: .dataMatrix,
+            .itf14: .itf14,
+        ]
+        guard let barcodeType = mapping[symbology] else { return nil }
+        self = barcodeType
     }
 
     init?(metadataType: AVMetadataObject.ObjectType) {
