@@ -1,11 +1,13 @@
 import Contacts
 import EventKit
+import MessageUI
 import NetworkExtension
 import SwiftUI
 
 struct BarcodeActionView: View {
     let payload: ParsedPayload
     @State private var wifiStatus: String?
+    @State private var showingMessageCompose = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -29,6 +31,12 @@ struct BarcodeActionView: View {
         .padding(12)
         .background(.fill.quinary, in: RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal)
+        .sheet(isPresented: $showingMessageCompose) {
+            if case let .sms(recipients, body) = payload {
+                MessageComposeView(recipients: recipients, body: body)
+                    .ignoresSafeArea()
+            }
+        }
     }
 
     @ViewBuilder
@@ -77,8 +85,8 @@ struct BarcodeActionView: View {
                 }
             }
 
-        case let .sms(recipient, _):
-            Label(recipient, systemImage: "message")
+        case let .sms(recipients, _):
+            Label(recipients.joined(separator: ", "), systemImage: "message")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
@@ -109,8 +117,10 @@ struct BarcodeActionView: View {
             openPhone(number: number)
         case let .email(recipient, subject, body):
             openEmail(recipient: recipient, subject: subject, body: body)
-        case let .sms(recipient, body):
-            openSMS(recipient: recipient, body: body)
+        case .sms:
+            if MFMessageComposeViewController.canSendText() {
+                showingMessageCompose = true
+            }
         case let .wifi(ssid, password, encryption):
             joinWifi(ssid: ssid, password: password, encryption: encryption)
         case let .vCard(raw):
@@ -135,19 +145,6 @@ struct BarcodeActionView: View {
         if let body { items.append(URLQueryItem(name: "body", value: body)) }
         if !items.isEmpty { components?.queryItems = items }
         if let url = components?.url {
-            UIApplication.shared.open(url)
-        }
-    }
-
-    private func openSMS(recipient: String, body: String?) {
-        var urlString = "sms:\(recipient)"
-        if let body {
-            let encoded = body.addingPercentEncoding(
-                withAllowedCharacters: .urlQueryAllowed
-            ) ?? body
-            urlString += "&body=\(encoded)"
-        }
-        if let url = URL(string: urlString) {
             UIApplication.shared.open(url)
         }
     }
@@ -240,5 +237,42 @@ struct BarcodeActionView: View {
         // Try date only
         formatter.dateFormat = "yyyyMMdd"
         return formatter.date(from: string)
+    }
+}
+
+private struct MessageComposeView: UIViewControllerRepresentable {
+    let recipients: [String]
+    let body: String?
+    @Environment(\.dismiss) private var dismiss
+
+    func makeUIViewController(context: Context) -> MFMessageComposeViewController {
+        let controller = MFMessageComposeViewController()
+        controller.recipients = recipients
+        controller.body = body
+        controller.messageComposeDelegate = context.coordinator
+        return controller
+    }
+
+    func updateUIViewController(_: MFMessageComposeViewController, context _: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(dismiss: dismiss)
+    }
+
+    nonisolated class Coordinator: NSObject, MFMessageComposeViewControllerDelegate {
+        private let dismiss: DismissAction
+
+        init(dismiss: DismissAction) {
+            self.dismiss = dismiss
+        }
+
+        func messageComposeViewController(
+            _: MFMessageComposeViewController,
+            didFinishWith _: MessageComposeResult
+        ) {
+            Task { @MainActor in
+                dismiss()
+            }
+        }
     }
 }

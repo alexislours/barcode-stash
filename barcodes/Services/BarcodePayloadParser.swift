@@ -4,7 +4,7 @@ enum ParsedPayload {
     case url(URL)
     case phone(number: String)
     case email(recipient: String, subject: String?, body: String?)
-    case sms(recipient: String, body: String?)
+    case sms(recipients: [String], body: String?)
     case wifi(ssid: String, password: String?, encryption: String?)
     case vCard(String)
     case calendarEvent(String)
@@ -136,16 +136,30 @@ enum BarcodePayloadParser {
         guard lower.hasPrefix("sms:") || lower.hasPrefix("smsto:") else { return nil }
         let prefix = lower.hasPrefix("smsto:") ? 6 : 4
         let rest = String(value.dropFirst(prefix))
+        // Try query-string format first: sms:number?body=message
         let parts = rest.components(separatedBy: "?")
-        let recipient = parts[0]
-        guard !recipient.isEmpty else { return nil }
+        let recipientPart = parts[0]
         var body: String?
         if parts.count > 1 {
             let queryString = parts.dropFirst().joined(separator: "?")
             let params = URLComponents(string: "?\(queryString)")?.queryItems ?? []
             body = params.first(where: { $0.name == "body" })?.value
         }
-        return .sms(recipient: recipient, body: body)
+        // Fall back to colon-separated format: SMSTO:number:message
+        var recipientString = recipientPart
+        if body == nil, let colonIndex = recipientPart.firstIndex(of: ":") {
+            recipientString = String(recipientPart[recipientPart.startIndex ..< colonIndex])
+            let messageStart = recipientPart.index(after: colonIndex)
+            if messageStart < recipientPart.endIndex {
+                body = String(recipientPart[messageStart...])
+            }
+        }
+        let recipients = recipientString
+            .components(separatedBy: ",")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        guard !recipients.isEmpty else { return nil }
+        return .sms(recipients: recipients, body: body)
     }
 
     private static func parseGeo(_ value: String) -> ParsedPayload? {
