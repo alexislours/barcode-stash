@@ -1,4 +1,5 @@
 import Contacts
+import ContactsUI
 import EventKit
 import MessageUI
 import SwiftUI
@@ -89,10 +90,29 @@ struct BarcodeActionView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-        case .vCard:
-            Label("Contact card detected", systemImage: "person.crop.circle")
+        case let .vCard(raw):
+            let summary = Self.vCardSummary(raw)
+            VStack(alignment: .leading, spacing: 2) {
+                Label(
+                    summary.name ?? String(
+                        localized: "Contact card detected",
+                        comment: "Fallback label when vCard has no name"
+                    ),
+                    systemImage: "person.crop.circle"
+                )
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+                if let phone = summary.phone {
+                    Label(phone, systemImage: "phone")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+                if let email = summary.email {
+                    Label(email, systemImage: "envelope")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+            }
 
         case .calendarEvent:
             Label("Calendar event detected", systemImage: "calendar")
@@ -123,7 +143,7 @@ struct BarcodeActionView: View {
         case .wifi:
             break
         case let .vCard(raw):
-            addContact(vCardString: raw)
+            presentContactCard(vCardString: raw)
         case let .calendarEvent(raw):
             addCalendarEvent(raw: raw)
         case let .geo(lat, lon, label):
@@ -159,21 +179,58 @@ struct BarcodeActionView: View {
         }
     }
 
-    private func addContact(vCardString: String) {
+    private func presentContactCard(vCardString: String) {
         guard let data = vCardString.data(using: .utf8),
               let contacts = try? CNContactVCardSerialization.contacts(with: data),
-              let contact = contacts.first
-        else {
-            return
+              let contact = contacts.first,
+              let windowScene = UIApplication.shared.connectedScenes
+              .compactMap({ $0 as? UIWindowScene }).first,
+              let root = windowScene.keyWindow?.rootViewController
+        else { return }
+        let controller = CNContactViewController(forUnknownContact: contact)
+        controller.contactStore = CNContactStore()
+        controller.allowsEditing = true
+        controller.allowsActions = true
+        let nav = UINavigationController(rootViewController: controller)
+        controller.navigationItem.rightBarButtonItem = UIBarButtonItem(
+            systemItem: .done,
+            primaryAction: UIAction { _ in nav.dismiss(animated: true) }
+        )
+        var presenter = root
+        while let presented = presenter.presentedViewController {
+            presenter = presented
         }
-        Task {
-            let store = CNContactStore()
-            guard try await store.requestAccess(for: .contacts) else { return }
-            let saveRequest = CNSaveRequest()
-            guard let mutableContact = contact.mutableCopy() as? CNMutableContact else { return }
-            saveRequest.add(mutableContact, toContainerWithIdentifier: nil)
-            try? store.execute(saveRequest)
+        presenter.present(nav, animated: true)
+    }
+
+    private static func vCardValue(line: String, property: String) -> String? {
+        guard line.hasPrefix(property) else { return nil }
+        let after = line[line.index(line.startIndex, offsetBy: property.count)...]
+        guard let first = after.first, first == ":" || first == ";" else { return nil }
+        guard let colonIdx = line.firstIndex(of: ":") else { return nil }
+        let value = String(line[line.index(after: colonIdx)...])
+            .trimmingCharacters(in: .whitespaces)
+        return value.isEmpty ? nil : value
+    }
+
+    private struct VCardSummary {
+        var name: String?
+        var phone: String?
+        var email: String?
+    }
+
+    private static func vCardSummary(_ raw: String) -> VCardSummary {
+        var result = VCardSummary()
+        for line in raw.components(separatedBy: .newlines) {
+            if result.name == nil, let value = vCardValue(line: line, property: "FN") {
+                result.name = value
+            } else if result.phone == nil, let value = vCardValue(line: line, property: "TEL") {
+                result.phone = value
+            } else if result.email == nil, let value = vCardValue(line: line, property: "EMAIL") {
+                result.email = value
+            }
         }
+        return result
     }
 
     private func addCalendarEvent(raw: String) {

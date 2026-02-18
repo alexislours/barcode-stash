@@ -4226,7 +4226,7 @@
       }
     },
     "Contact card detected" : {
-      "comment" : "Label shown when a scanned barcode contains a vCard contact",
+      "comment" : "Fallback label when vCard has no name",
       "localizations" : {
         "de" : {
           "stringUnit" : {
