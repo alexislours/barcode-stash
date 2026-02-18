@@ -3,19 +3,6 @@ import XCTest
 final class ScreenshotTests: XCTestCase {
     nonisolated(unsafe) var app: XCUIApplication!
 
-    private static let supportedLanguages: [(language: String, locale: String)] = [
-        ("en-US", "en_US"),
-        ("de-DE", "de_DE"),
-        ("es-ES", "es_ES"),
-        ("fr-FR", "fr_FR"),
-        ("it", "it"),
-        ("ja", "ja"),
-        ("ko", "ko"),
-        ("pt-BR", "pt_BR"),
-        ("zh-Hans", "zh_Hans"),
-        ("zh-Hant", "zh_Hant"),
-    ]
-
     /// Localized search terms for the search screenshot.
     /// Must match the "grocery" tag translation in MockDataSeeder's locale map.
     private static let searchTerms: [String: String] = [
@@ -37,34 +24,42 @@ final class ScreenshotTests: XCTestCase {
         setupSnapshot(app)
     }
 
-    func testScreenshots() {
-        let total = Self.supportedLanguages.count
-        for (index, (language, locale)) in Self.supportedLanguages.enumerated() {
-            XCTContext.runActivity(named: "[\(index + 1)/\(total)] \(language)") { _ in
-                // Update snapshot language so files save into the right subdirectory
-                MainActor.assumeIsolated {
-                    Snapshot.deviceLanguage = language
-                    Snapshot.currentLocale = locale
-                }
+    // MARK: - Per-Language Test Entry Points
 
-                // Configure launch arguments for this language
-                app.launchArguments = [
-                    "--screenshots",
-                    "-AppleLanguages", "(\(language))",
-                    "-AppleLocale", locale,
-                    "-FASTLANE_SNAPSHOT", "YES",
-                    "-ui_testing",
-                ]
-                if let bgPath = Bundle(for: Self.self).path(forResource: "bg", ofType: "jpg") {
-                    app.launchArguments.append("--screenshot-bg=\(bgPath)")
-                }
+    func testScreenshots_EnUS()   { runScreenshots(language: "en-US",    locale: "en_US") }
+    func testScreenshots_DeDE()   { runScreenshots(language: "de-DE",    locale: "de_DE") }
+    func testScreenshots_EsES()   { runScreenshots(language: "es-ES",    locale: "es_ES") }
+    func testScreenshots_FrFR()   { runScreenshots(language: "fr-FR",    locale: "fr_FR") }
+    func testScreenshots_It()     { runScreenshots(language: "it",       locale: "it") }
+    func testScreenshots_Ja()     { runScreenshots(language: "ja",       locale: "ja") }
+    func testScreenshots_Ko()     { runScreenshots(language: "ko",       locale: "ko") }
+    func testScreenshots_PtBR()   { runScreenshots(language: "pt-BR",    locale: "pt_BR") }
+    func testScreenshots_ZhHans() { runScreenshots(language: "zh-Hans",  locale: "zh_Hans") }
+    func testScreenshots_ZhHant() { runScreenshots(language: "zh-Hant",  locale: "zh_Hant") }
 
-                XCUIDevice.shared.appearance = .light
-                app.launch()
+    // MARK: - Shared Runner
 
-                captureScreenshots(language: language)
-            }
+    private func runScreenshots(language: String, locale: String) {
+        MainActor.assumeIsolated {
+            Snapshot.deviceLanguage = language
+            Snapshot.currentLocale = locale
         }
+
+        app.launchArguments = [
+            "--screenshots",
+            "-AppleLanguages", "(\(language))",
+            "-AppleLocale", locale,
+            "-FASTLANE_SNAPSHOT", "YES",
+            "-ui_testing",
+        ]
+        if let bgPath = Bundle(for: Self.self).path(forResource: "bg", ofType: "jpg") {
+            app.launchArguments.append("--screenshot-bg=\(bgPath)")
+        }
+
+        XCUIDevice.shared.appearance = .light
+        app.launch()
+
+        captureScreenshots(language: language)
     }
 
     // MARK: - Screenshot Flow

@@ -21,7 +21,7 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 [bundle exec] fastlane ios screenshots
 ```
 
-Capture App Store screenshots with mock data
+Capture App Store screenshots with mock data (2-at-a-time parallelism)
 
 ----
 
