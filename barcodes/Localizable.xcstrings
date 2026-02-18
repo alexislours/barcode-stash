@@ -3464,7 +3464,7 @@
       }
     },
     "Calendar event detected" : {
-      "comment" : "Label shown when a scanned barcode contains a calendar event",
+      "comment" : "Fallback label when calendar event has no title",
       "localizations" : {
         "de" : {
           "stringUnit" : {

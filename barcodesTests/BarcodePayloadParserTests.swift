@@ -386,6 +386,26 @@ struct CalendarEventParsingTests {
         }
         #expect(raw == input)
     }
+
+    @Test func parsesVCalendarWrappedEvent() {
+        let input = """
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            BEGIN:VEVENT
+            SUMMARY:Team Standup
+            DTSTART:20250301T090000Z
+            DTEND:20250301T093000Z
+            END:VEVENT
+            END:VCALENDAR
+            """
+        guard case .calendarEvent(let raw) =
+            BarcodePayloadParser.parse(rawValue: input, type: type)
+        else {
+            Issue.record("Expected .calendarEvent")
+            return
+        }
+        #expect(raw == input)
+    }
 }
 
 // MARK: - Geo

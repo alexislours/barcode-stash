@@ -1,6 +1,7 @@
 import Contacts
 import ContactsUI
 import EventKit
+import EventKitUI
 import MessageUI
 import SwiftUI
 
@@ -114,10 +115,30 @@ struct BarcodeActionView: View {
                 }
             }
 
-        case .calendarEvent:
-            Label("Calendar event detected", systemImage: "calendar")
+        case let .calendarEvent(raw):
+            let summary = Self.calendarEventSummary(raw)
+            VStack(alignment: .leading, spacing: 2) {
+                Label(
+                    summary.title ?? String(
+                        localized: "Calendar event detected",
+                        comment: "Fallback label when calendar event has no title"
+                    ),
+                    systemImage: "calendar"
+                )
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+                if let date = summary.dateString {
+                    Label(date, systemImage: "clock")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+                if let description = summary.description {
+                    Text(description)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(2)
+                }
+            }
 
         case let .geo(lat, lon, label):
             Label(label ?? String(format: "%.4f, %.4f", lat, lon), systemImage: "map")
@@ -145,7 +166,7 @@ struct BarcodeActionView: View {
         case let .vCard(raw):
             presentContactCard(vCardString: raw)
         case let .calendarEvent(raw):
-            addCalendarEvent(raw: raw)
+            presentCalendarEvent(raw: raw)
         case let .geo(lat, lon, label):
             openMap(latitude: lat, longitude: lon, label: label)
         }
@@ -233,35 +254,82 @@ struct BarcodeActionView: View {
         return result
     }
 
-    private func addCalendarEvent(raw: String) {
+    private func presentCalendarEvent(raw: String) {
         Task {
             let store = EKEventStore()
             guard try await store.requestFullAccessToEvents() else { return }
             let event = EKEvent(eventStore: store)
             event.calendar = store.defaultCalendarForNewEvents
+            Self.populateEvent(event, from: raw)
 
-            let lines = raw.components(separatedBy: .newlines)
-            for line in lines {
-                if line.hasPrefix("SUMMARY:") {
-                    event.title = String(line.dropFirst(8))
-                } else if line.hasPrefix("DTSTART:") {
-                    event.startDate = parseICalDate(String(line.dropFirst(8)))
-                } else if line.hasPrefix("DTEND:") {
-                    event.endDate = parseICalDate(String(line.dropFirst(6)))
-                } else if line.hasPrefix("LOCATION:") {
-                    event.location = String(line.dropFirst(9))
-                }
+            guard let windowScene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene }).first,
+                let root = windowScene.keyWindow?.rootViewController
+            else { return }
+
+            let editController = EKEventEditViewController()
+            editController.eventStore = store
+            editController.event = event
+            let delegate = CalendarEditDelegate(controller: editController)
+            editController.editViewDelegate = delegate
+            objc_setAssociatedObject(
+                editController, &CalendarEditDelegate.key, delegate, .OBJC_ASSOCIATION_RETAIN
+            )
+
+            var presenter = root
+            while let presented = presenter.presentedViewController {
+                presenter = presented
             }
-
-            if event.title == nil { event.title = "Event" }
-            if event.startDate == nil { event.startDate = Date() }
-            if event.endDate == nil { event.endDate = (event.startDate ?? Date()).addingTimeInterval(3600) }
-
-            try? store.save(event, span: .thisEvent)
+            presenter.present(editController, animated: true)
         }
     }
 
-    private func parseICalDate(_ string: String) -> Date? {
+    private static func populateEvent(_ event: EKEvent, from raw: String) {
+        let eventBlock = extractVEventBlock(raw)
+        for line in eventBlock.components(separatedBy: .newlines) {
+            if let value = iCalValue(line: line, property: "SUMMARY") {
+                event.title = value
+            } else if let value = iCalValue(line: line, property: "DTSTART") {
+                event.startDate = parseICalDate(value)
+            } else if let value = iCalValue(line: line, property: "DTEND") {
+                event.endDate = parseICalDate(value)
+            } else if let value = iCalValue(line: line, property: "LOCATION") {
+                event.location = value
+            } else if let value = iCalValue(line: line, property: "DESCRIPTION") {
+                event.notes = value
+            }
+        }
+        if event.title == nil { event.title = "Event" }
+        if event.startDate == nil { event.startDate = Date() }
+        if event.endDate == nil {
+            event.endDate = (event.startDate ?? Date()).addingTimeInterval(3600)
+        }
+    }
+
+    /// Extracts the value from an iCal property line, handling parameter forms like `DTSTART;TZID=...:value`.
+    private static func iCalValue(line: String, property: String) -> String? {
+        guard line.hasPrefix(property) else { return nil }
+        let after = line[line.index(line.startIndex, offsetBy: property.count)...]
+        guard let first = after.first, first == ":" || first == ";" else { return nil }
+        guard let colonIdx = line.firstIndex(of: ":") else { return nil }
+        let value = String(line[line.index(after: colonIdx)...])
+            .trimmingCharacters(in: .whitespaces)
+        return value.isEmpty ? nil : value
+    }
+
+    /// Extracts the VEVENT block from a VCALENDAR wrapper, or returns the input as-is.
+    private static func extractVEventBlock(_ raw: String) -> String {
+        let upper = raw.uppercased()
+        guard upper.contains("BEGIN:VCALENDAR"),
+              let startRange = upper.range(of: "BEGIN:VEVENT"),
+              let endRange = upper.range(of: "END:VEVENT")
+        else { return raw }
+        let start = startRange.lowerBound
+        let end = endRange.upperBound
+        return String(raw[start ..< end])
+    }
+
+    private static func parseICalDate(_ string: String) -> Date? {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         // Try basic format: 20240101T120000Z
@@ -276,41 +344,27 @@ struct BarcodeActionView: View {
         formatter.dateFormat = "yyyyMMdd"
         return formatter.date(from: string)
     }
-}
 
-private struct MessageComposeView: UIViewControllerRepresentable {
-    let recipients: [String]
-    let body: String?
-    @Environment(\.dismiss) private var dismiss
-
-    func makeUIViewController(context: Context) -> MFMessageComposeViewController {
-        let controller = MFMessageComposeViewController()
-        controller.recipients = recipients
-        controller.body = body
-        controller.messageComposeDelegate = context.coordinator
-        return controller
+    private struct CalendarEventSummary {
+        var title: String?
+        var dateString: String?
+        var description: String?
     }
 
-    func updateUIViewController(_: MFMessageComposeViewController, context _: Context) {}
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(dismiss: dismiss)
-    }
-
-    nonisolated class Coordinator: NSObject, MFMessageComposeViewControllerDelegate {
-        private let dismiss: DismissAction
-
-        init(dismiss: DismissAction) {
-            self.dismiss = dismiss
-        }
-
-        func messageComposeViewController(
-            _: MFMessageComposeViewController,
-            didFinishWith _: MessageComposeResult
-        ) {
-            Task { @MainActor in
-                dismiss()
+    private static func calendarEventSummary(_ raw: String) -> CalendarEventSummary {
+        var result = CalendarEventSummary()
+        let eventBlock = extractVEventBlock(raw)
+        for line in eventBlock.components(separatedBy: .newlines) {
+            if result.title == nil, let value = iCalValue(line: line, property: "SUMMARY") {
+                result.title = value
+            } else if result.dateString == nil, let value = iCalValue(line: line, property: "DTSTART") {
+                if let date = parseICalDate(value) {
+                    result.dateString = date.formatted(date: .abbreviated, time: .shortened)
+                }
+            } else if result.description == nil, let value = iCalValue(line: line, property: "DESCRIPTION") {
+                result.description = value
             }
         }
+        return result
     }
 }

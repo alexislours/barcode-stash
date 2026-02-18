@@ -47,7 +47,8 @@ enum BarcodePayloadParser {
             return .vCard(trimmed)
         }
 
-        if trimmed.uppercased().hasPrefix("BEGIN:VEVENT") {
+        if trimmed.uppercased().hasPrefix("BEGIN:VEVENT")
+            || trimmed.uppercased().hasPrefix("BEGIN:VCALENDAR") {
             return .calendarEvent(trimmed)
         }
 
