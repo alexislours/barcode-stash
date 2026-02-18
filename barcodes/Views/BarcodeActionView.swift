@@ -282,8 +282,8 @@ struct BarcodeActionView: View {
         controller.allowsEditing = true
         controller.allowsActions = true
         let nav = UINavigationController(rootViewController: controller)
-        controller.navigationItem.rightBarButtonItem = UIBarButtonItem(
-            systemItem: .done,
+        controller.navigationItem.leftBarButtonItem = UIBarButtonItem(
+            systemItem: .cancel,
             primaryAction: UIAction { _ in nav.dismiss(animated: true) }
         )
         var presenter = root
