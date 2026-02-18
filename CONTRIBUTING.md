@@ -9,7 +9,7 @@ Please use the [issue templates](https://github.com/alexislours/barcode-stash/is
 ## Development Setup
 
 - **Xcode 26.2+** (no third-party dependencies)
-- **iOS 26.2+** deployment target
+- **iOS 26.0+** deployment target
 - A **physical device** is required for camera/barcode scanning — the simulator cannot use `AVCaptureSession`
 
 Clone the repo and open `barcodes.xcodeproj` in Xcode. Build and run on a simulator or device.
