@@ -40,6 +40,10 @@ struct BarcodeDetailView: View {
                         )
                     )
 
+                if let payload = BarcodePayloadParser.parse(rawValue: barcode.rawValue, type: barcode.type) {
+                    BarcodeActionView(payload: payload)
+                }
+
                 VStack(spacing: 8) {
                     Text(barcode.type.localizedName)
                         .font(.title2.bold())
@@ -53,10 +57,6 @@ struct BarcodeDetailView: View {
                     Text(barcode.timestamp, format: .dateTime.month().day().year().hour().minute())
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                }
-
-                if let payload = BarcodePayloadParser.parse(rawValue: barcode.rawValue, type: barcode.type) {
-                    BarcodeActionView(payload: payload)
                 }
 
                 VStack(alignment: .leading, spacing: 6) {

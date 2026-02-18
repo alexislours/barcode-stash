@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 enum ParsedPayload {
     case url(URL)
@@ -9,6 +10,32 @@ enum ParsedPayload {
     case vCard(String)
     case calendarEvent(String)
     case geo(latitude: Double, longitude: Double, label: String?)
+
+    var title: String {
+        switch self {
+        case .url: String(localized: "Website", comment: "Action card title for URL payload")
+        case .phone: String(localized: "Phone Number", comment: "Action card title for phone payload")
+        case .email: String(localized: "Email", comment: "Action card title for email payload")
+        case .sms: String(localized: "Message", comment: "Action card title for SMS payload")
+        case .wifi: String(localized: "Wi-Fi Network", comment: "Action card title for WiFi payload")
+        case .vCard: String(localized: "Contact Card", comment: "Action card title for vCard payload")
+        case .calendarEvent: String(localized: "Calendar Event", comment: "Action card title for calendar payload")
+        case .geo: String(localized: "Location", comment: "Action card title for geo payload")
+        }
+    }
+
+    var tintColor: Color {
+        switch self {
+        case .url: .blue
+        case .phone: .green
+        case .email: .blue
+        case .sms: .green
+        case .wifi: .purple
+        case .vCard: .teal
+        case .calendarEvent: .red
+        case .geo: .orange
+        }
+    }
 
     var actionLabel: String {
         switch self {
@@ -30,8 +57,8 @@ enum ParsedPayload {
         case .email: "envelope.fill"
         case .sms: "message.fill"
         case .wifi: "wifi"
-        case .vCard: "person.crop.circle.badge.plus"
-        case .calendarEvent: "calendar.badge.plus"
+        case .vCard: "person.crop.circle.fill"
+        case .calendarEvent: "calendar"
         case .geo: "map.fill"
         }
     }
