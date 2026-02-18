@@ -33,6 +33,7 @@ struct MessageComposeView: UIViewControllerRepresentable {
             _: MFMessageComposeViewController,
             didFinishWith _: MessageComposeResult
         ) {
+            let dismiss = dismiss
             Task { @MainActor in
                 dismiss()
             }
@@ -52,6 +53,7 @@ nonisolated class CalendarEditDelegate: NSObject, EKEventEditViewDelegate {
         _: EKEventEditViewController,
         didCompleteWith _: EKEventEditViewAction
     ) {
+        let controller = controller
         Task { @MainActor in
             controller.dismiss(animated: true)
         }

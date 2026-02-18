@@ -4,7 +4,7 @@ import UIKit
 final class BarcodeImageCache: Sendable {
     static let shared = BarcodeImageCache()
 
-    private let cache: NSCache<NSString, UIImage>
+    private nonisolated(unsafe) let cache: NSCache<NSString, UIImage>
     private let diskCacheURL: URL
 
     private init() {
@@ -41,11 +41,11 @@ final class BarcodeImageCache: Sendable {
         return key as NSString
     }
 
-    func image(for key: NSString) -> UIImage? {
+    nonisolated func image(for key: NSString) -> UIImage? {
         cache.object(forKey: key)
     }
 
-    func setImage(_ image: UIImage, for key: NSString) {
+    nonisolated func setImage(_ image: UIImage, for key: NSString) {
         let cost = Int(image.size.width * image.scale * image.size.height * image.scale * 4)
         cache.setObject(image, forKey: key, cost: cost)
     }
@@ -59,7 +59,7 @@ final class BarcodeImageCache: Sendable {
     }
 
     nonisolated func cachedImage(for key: NSString) async -> UIImage? {
-        if let memoryHit = await image(for: key) {
+        if let memoryHit = image(for: key) {
             return memoryHit
         }
 
@@ -70,12 +70,12 @@ final class BarcodeImageCache: Sendable {
             return nil
         }
 
-        await setImage(diskImage, for: key)
+        setImage(diskImage, for: key)
         return diskImage
     }
 
     nonisolated func storeImage(_ image: UIImage, for key: NSString) async {
-        await setImage(image, for: key)
+        setImage(image, for: key)
 
         let url = diskURL(for: key)
         if let pngData = image.pngData() {
