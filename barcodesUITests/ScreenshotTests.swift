@@ -1,7 +1,8 @@
 import XCTest
 
-final class ScreenshotTests: XCTestCase {
-    nonisolated(unsafe) var app: XCUIApplication!
+@MainActor
+final class ScreenshotTests: XCTestCase, @unchecked Sendable {
+    var app: XCUIApplication!
 
     /// Localized search terms for the search screenshot.
     /// Must match the "grocery" tag translation in MockDataSeeder's locale map.
@@ -18,10 +19,12 @@ final class ScreenshotTests: XCTestCase {
         "zh-Hant": "食品",
     ]
 
-    override func setUpWithError() throws {
-        continueAfterFailure = false
-        app = XCUIApplication()
-        setupSnapshot(app)
+    nonisolated override func setUpWithError() throws {
+        MainActor.assumeIsolated {
+            continueAfterFailure = false
+            app = XCUIApplication()
+            setupSnapshot(app)
+        }
     }
 
     // MARK: - Per-Language Test Entry Points
@@ -64,8 +67,8 @@ final class ScreenshotTests: XCTestCase {
 
     // MARK: - Screenshot Flow
 
-    private func step(_ name: String, action: () -> Void) {
-        XCTContext.runActivity(named: name) { _ in action() }
+    private func step(_ name: String, action: @MainActor () -> Void) {
+        XCTContext.runActivity(named: name) { @MainActor _ in action() }
     }
 
     private func captureScreenshots(language: String) {

@@ -101,8 +101,8 @@ final class BarcodeScannerViewController: UIViewController {
         hideHighlight(animated: false)
         sessionQueue.async { [weak self] in
             guard let self else { return }
-            if !self.captureSession.isRunning {
-                self.captureSession.startRunning()
+            if !captureSession.isRunning {
+                captureSession.startRunning()
                 DispatchQueue.main.async { [weak self] in
                     self?.applyTorch()
                 }
@@ -113,8 +113,8 @@ final class BarcodeScannerViewController: UIViewController {
     func stopRunning() {
         sessionQueue.async { [weak self] in
             guard let self else { return }
-            if self.captureSession.isRunning {
-                self.captureSession.stopRunning()
+            if captureSession.isRunning {
+                captureSession.stopRunning()
             }
         }
     }
