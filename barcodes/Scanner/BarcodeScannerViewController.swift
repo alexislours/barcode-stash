@@ -19,10 +19,10 @@ final class BarcodeScannerViewController: UIViewController {
         .pdf417, .aztec, .dataMatrix, .itf14,
     ]
 
-    private let captureSession = AVCaptureSession()
+    private nonisolated(unsafe) let captureSession = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "barcode.scanner.session")
     private var previewLayer: AVCaptureVideoPreviewLayer?
-    private var metadataOutput: AVCaptureMetadataOutput?
+    private nonisolated(unsafe) var metadataOutput: AVCaptureMetadataOutput?
     private var videoDevice: AVCaptureDevice?
     private var lastZoomFactor: CGFloat = 1.0
     private var desiredTorchOn = false
@@ -99,10 +99,11 @@ final class BarcodeScannerViewController: UIViewController {
 
     func startRunning() {
         hideHighlight(animated: false)
-        sessionQueue.async { [captureSession, weak self] in
-            if !captureSession.isRunning {
-                captureSession.startRunning()
-                DispatchQueue.main.async {
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            if !self.captureSession.isRunning {
+                self.captureSession.startRunning()
+                DispatchQueue.main.async { [weak self] in
                     self?.applyTorch()
                 }
             }
@@ -110,9 +111,10 @@ final class BarcodeScannerViewController: UIViewController {
     }
 
     func stopRunning() {
-        sessionQueue.async { [captureSession] in
-            if captureSession.isRunning {
-                captureSession.stopRunning()
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            if self.captureSession.isRunning {
+                self.captureSession.stopRunning()
             }
         }
     }

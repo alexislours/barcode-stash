@@ -29,18 +29,19 @@ enum ReverseGeocoder {
             }
         }
 
+        let result = await Self.fetchAddress(latitude: latitude, longitude: longitude)
+        cache[key] = CacheEntry(address: result, timestamp: .now)
+        return result
+    }
+
+    @concurrent
+    private static func fetchAddress(latitude: Double, longitude: Double) async -> String? {
         let location = CLLocation(latitude: latitude, longitude: longitude)
         guard let request = MKReverseGeocodingRequest(location: location),
               let mapItem = try? await request.mapItems.first,
               let address = mapItem.address
-        else {
-            cache[key] = CacheEntry(address: nil, timestamp: .now)
-            return nil
-        }
-
-        let result = address.shortAddress
-        cache[key] = CacheEntry(address: result, timestamp: .now)
-        return result
+        else { return nil }
+        return address.shortAddress
     }
 
     static func clearCache() {

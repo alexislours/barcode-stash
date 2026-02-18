@@ -230,9 +230,10 @@ struct HistoryView: View {
     // MARK: - Trailing Toolbar
 
     private var trailingToolbar: some View {
-        HStack(spacing: 12) {
+        let scanning = isImageScanning
+        return HStack(spacing: 12) {
             PhotosPicker(selection: $selectedPhotoItems, matching: .images) {
-                if isImageScanning {
+                if scanning {
                     ProgressView()
                 } else {
                     Image(systemName: "photo.on.rectangle.angled")
