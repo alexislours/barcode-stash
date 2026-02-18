@@ -25,13 +25,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ImageBarcodeScanner.detectBarcodes(from:)` convenience that downsamples, extracts GPS, and detects in one pass
 - `ImageBarcodeScanner.downsampledCGImage(from:maxPixelSize:)` for memory-efficient image loading via `CGImageSourceCreateThumbnailAtIndex`
 - Stale file cleanup in the Share Extension shared directory (files older than 1 hour)
+- vCard contact preview showing parsed name, phone, and email with interactive `CNContactViewController` for review before saving
+- vEvent and vCalendar event preview showing title, dates, and location with `EKEventEditViewController` for review before saving
+- In-app SMS composition via `MFMessageComposeViewController` with multi-recipient support
 
 ### Changed
 
+- Redesigned barcode action cards with color-coded icons, structured headers, and per-payload detail rows replacing the single-button layout
+- SMS parsing now supports multiple comma-separated recipients and colon-separated `SMSTO:number:message` format
+- Calendar event detection also matches `BEGIN:VCALENDAR` wrapper, not just bare `BEGIN:VEVENT`
 - Scanner floating action button icon from `plus` to `barcode.viewfinder` in `ContentView`
 - Photo library scanning now uses `Data`-based pipeline with downsampling instead of loading full `UIImage` into memory
 - Lint and format Makefile targets now include `ShareExtension/` directory
 - `CURRENT_PROJECT_VERSION` and `MARKETING_VERSION` moved from target-level to project-level build settings
+
+### Removed
+
+- Wi-Fi network join action (`NEHotspotConfiguration` requires an entitlement unavailable to most apps)
 
 ## [1.0.0] (2026021701) - 2026-02-17
 
