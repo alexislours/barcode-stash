@@ -4,13 +4,14 @@ import UIKit
 struct FullscreenBarcodeView: View {
     let barcode: ScannedBarcode
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     @State private var previousBrightness: CGFloat = 0
     @State private var dragOffset: CGFloat = 0
 
     private var currentScreen: UIScreen? {
         UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
-            .first(where: { $0.activationState == .foregroundActive })?
+            .first?
             .screen
     }
 
@@ -96,6 +97,18 @@ struct FullscreenBarcodeView: View {
         .onDisappear {
             currentScreen?.brightness = previousBrightness
             UIApplication.shared.isIdleTimerDisabled = false
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            switch newPhase {
+            case .active:
+                currentScreen?.brightness = 1.0
+                UIApplication.shared.isIdleTimerDisabled = true
+            case .background:
+                currentScreen?.brightness = previousBrightness
+                UIApplication.shared.isIdleTimerDisabled = false
+            default:
+                break
+            }
         }
     }
 }
