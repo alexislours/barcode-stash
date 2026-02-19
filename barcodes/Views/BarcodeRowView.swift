@@ -8,7 +8,7 @@ struct BarcodeRowView: View {
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
-        NavigationLink(destination: BarcodeDetailView(barcode: barcode)) {
+        NavigationLink(value: barcode) {
             rowContent
         }
         .accessibilityIdentifier("barcode-row-\(barcode.rawValue)")
@@ -26,6 +26,14 @@ struct BarcodeRowView: View {
                 Image(systemName: barcode.isFavorite ? "star.slash" : "star.fill")
             }
             .tint(.yellow)
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            Button(role: .destructive) {
+                UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                modelContext.delete(barcode)
+            } label: {
+                Image(systemName: "trash")
+            }
         }
         .contextMenu {
             contextMenuContent

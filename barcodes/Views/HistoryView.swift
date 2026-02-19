@@ -196,9 +196,6 @@ struct HistoryView: View {
                         )
                         .tag(barcode.persistentModelID)
                     }
-                    .onDelete { offsets in
-                        deleteBarcodes(at: offsets, from: group.barcodes)
-                    }
                 }
             }
         }
@@ -211,6 +208,9 @@ struct HistoryView: View {
                 .padding(.vertical, 10)
                 .opacity(isEditing ? 1 : 0)
                 .allowsHitTesting(isEditing)
+        }
+        .navigationDestination(for: ScannedBarcode.self) { barcode in
+            BarcodeDetailView(barcode: barcode)
         }
         .navigationDestination(item: $selectedBarcode) { barcode in
             BarcodeDetailView(barcode: barcode)
