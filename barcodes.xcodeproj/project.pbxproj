@@ -589,6 +589,8 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				DEAD_CODE_STRIPPING = YES;
+				STRIP_SWIFT_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_VERSION = 6.0;
 				VALIDATE_PRODUCT = YES;
@@ -670,7 +672,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				NEW_SETTING = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.alexislours.barcodes-app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

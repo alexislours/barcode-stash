@@ -5,7 +5,7 @@ import Foundation
 extension DataMatrixEncoder {
     // MARK: - ASCII Encoder
 
-    struct ASCIIEncoder: ModeEncoder {
+    struct ASCIIEncoder {
         let encodingMode = EncodingMode.ascii
 
         func encode(_ ctx: EncoderContext) {
@@ -163,7 +163,7 @@ extension DataMatrixEncoder {
 
     // MARK: - C40 Encoder
 
-    struct C40Encoder: ModeEncoder {
+    struct C40Encoder {
         let encodingMode = EncodingMode.c40
 
         func encode(_ ctx: EncoderContext) {
@@ -220,7 +220,7 @@ extension DataMatrixEncoder {
 
     // MARK: - Text Encoder
 
-    struct TextEncoder: ModeEncoder {
+    struct TextEncoder {
         let encodingMode = EncodingMode.text
 
         func encode(_ ctx: EncoderContext) {

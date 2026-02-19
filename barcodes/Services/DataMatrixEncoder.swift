@@ -81,11 +81,37 @@ enum DataMatrixEncoder {
     static let unlatch: UInt8 = 254
     static let pad: UInt8 = 129
 
-    // MARK: - Mode Encoder Protocol
+    // MARK: - Mode Encoder Dispatch
 
-    protocol ModeEncoder {
-        var encodingMode: EncodingMode { get }
-        func encode(_ ctx: EncoderContext)
+    enum AnyModeEncoder {
+        case ascii(ASCIIEncoder)
+        case c40(C40Encoder)
+        case text(TextEncoder)
+        case x12(X12Encoder)
+        case edifact(EdifactEncoder)
+        case base256(Base256Encoder)
+
+        var encodingMode: EncodingMode {
+            switch self {
+            case let .ascii(encoder): encoder.encodingMode
+            case let .c40(encoder): encoder.encodingMode
+            case let .text(encoder): encoder.encodingMode
+            case let .x12(encoder): encoder.encodingMode
+            case let .edifact(encoder): encoder.encodingMode
+            case let .base256(encoder): encoder.encodingMode
+            }
+        }
+
+        func encode(_ ctx: EncoderContext) {
+            switch self {
+            case let .ascii(encoder): encoder.encode(ctx)
+            case let .c40(encoder): encoder.encode(ctx)
+            case let .text(encoder): encoder.encode(ctx)
+            case let .x12(encoder): encoder.encode(ctx)
+            case let .edifact(encoder): encoder.encode(ctx)
+            case let .base256(encoder): encoder.encode(ctx)
+            }
+        }
     }
 
     // MARK: - Encoder Context
@@ -180,9 +206,9 @@ enum DataMatrixEncoder {
     // MARK: - High-Level Encoder
 
     static func encodeHighLevel(_ text: String) throws(EncodingError) -> [UInt8] {
-        let encoders: [any ModeEncoder] = [
-            ASCIIEncoder(), C40Encoder(), TextEncoder(),
-            X12Encoder(), EdifactEncoder(), Base256Encoder(),
+        let encoders: [AnyModeEncoder] = [
+            .ascii(ASCIIEncoder()), .c40(C40Encoder()), .text(TextEncoder()),
+            .x12(X12Encoder()), .edifact(EdifactEncoder()), .base256(Base256Encoder()),
         ]
 
         let ctx = try EncoderContext(message: text)

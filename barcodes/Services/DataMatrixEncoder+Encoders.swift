@@ -5,7 +5,7 @@ import Foundation
 extension DataMatrixEncoder {
     // MARK: - X12 Encoder
 
-    struct X12Encoder: ModeEncoder {
+    struct X12Encoder {
         let encodingMode = EncodingMode.x12
 
         func encode(_ ctx: EncoderContext) {
@@ -66,7 +66,7 @@ extension DataMatrixEncoder {
 
     // MARK: - EDIFACT Encoder
 
-    struct EdifactEncoder: ModeEncoder {
+    struct EdifactEncoder {
         let encodingMode = EncodingMode.edifact
 
         func encode(_ ctx: EncoderContext) {
@@ -187,7 +187,7 @@ extension DataMatrixEncoder {
 
     // MARK: - Base256 Encoder
 
-    struct Base256Encoder: ModeEncoder {
+    struct Base256Encoder {
         let encodingMode = EncodingMode.base256
 
         func encode(_ ctx: EncoderContext) {
