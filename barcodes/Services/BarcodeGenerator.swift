@@ -42,6 +42,8 @@ enum PDF417CompactionMode: String, CaseIterable {
 }
 
 enum BarcodeGenerator {
+    private static let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+
     // MARK: - Public API
 
     static func generateImage(for barcode: ScannedBarcode, size: CGSize = CGSize(width: 200, height: 200)) -> UIImage? {
@@ -56,8 +58,7 @@ enum BarcodeGenerator {
         guard let image = outputImage else { return nil }
 
         // Render at native resolution first to avoid CIContext interpolation
-        let context = CIContext(options: [.useSoftwareRenderer: false])
-        guard let cgImage = context.createCGImage(image, from: image.extent) else { return nil }
+        guard let cgImage = ciContext.createCGImage(image, from: image.extent) else { return nil }
 
         // Scale using nearest-neighbor to keep barcode edges crisp
         let scaleX = size.width / image.extent.width
