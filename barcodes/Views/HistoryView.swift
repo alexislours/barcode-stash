@@ -41,9 +41,7 @@ struct HistoryView: View {
     }
 
     private var activeFilterCount: Int {
-        (filterFavorites ? 1 : 0)
-            + (sourceFilter != .all ? 1 : 0)
-            + (selectedTag != nil ? 1 : 0)
+        (filterFavorites ? 1 : 0) + (sourceFilter != .all ? 1 : 0) + (selectedTag != nil ? 1 : 0)
     }
 
     private var isFiltering: Bool {
@@ -168,16 +166,8 @@ struct HistoryView: View {
                         comment: "Image scan: no results alert message"
                     )
                 }
-                .onChange(of: pendingSharedImageScan) {
-                    guard pendingSharedImageScan else { return }
-                    pendingSharedImageScan = false
-                    Task { await processSharedImages() }
-                }
-                .onAppear {
-                    guard pendingSharedImageScan else { return }
-                    pendingSharedImageScan = false
-                    Task { await processSharedImages() }
-                }
+                .onChange(of: pendingSharedImageScan) { handlePendingSharedImageScan() }
+                .onAppear { handlePendingSharedImageScan() }
         }
     }
 
@@ -200,7 +190,12 @@ struct HistoryView: View {
             }
         }
         .environment(\.editMode, $editMode)
-        .searchable(text: $searchText, isPresented: $isSearchPresented, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search barcodes")
+        .searchable(
+            text: $searchText,
+            isPresented: $isSearchPresented,
+            placement: .navigationBarDrawer(displayMode: .automatic),
+            prompt: "Search barcodes"
+        )
         .navigationTitle("History")
         .toolbar(content: historyToolbar)
         .safeAreaInset(edge: .bottom) {
@@ -321,6 +316,12 @@ struct HistoryView: View {
     }
 
     // MARK: - Image Scanning
+
+    private func handlePendingSharedImageScan() {
+        guard pendingSharedImageScan else { return }
+        pendingSharedImageScan = false
+        Task { await processSharedImages() }
+    }
 
     private func presentScanResults(_ results: [DetectedBarcode]) {
         if results.isEmpty {
