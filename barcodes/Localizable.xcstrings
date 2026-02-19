@@ -647,6 +647,7 @@
     },
     "%lld selected" : {
       "comment" : "Toolbar label showing count of selected barcodes in batch mode",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -709,6 +710,9 @@
           }
         }
       }
+    },
+    "%lld Selected" : {
+      "comment" : "History: number of selected items in batch mode"
     },
     "%lld skipped" : {
       "comment" : "Bulk scan mode: count of duplicate barcodes skipped",
@@ -3717,6 +3721,9 @@
         }
       }
     },
+    "Cancel selection" : {
+      "comment" : "History: cancel selection mode button"
+    },
     "Captures your current GPS coordinates for this barcode" : {
       "comment" : "Detail: add location button hint",
       "localizations" : {
@@ -5700,6 +5707,9 @@
         }
       }
     },
+    "Deselect All" : {
+      "comment" : "History: deselect all button label"
+    },
     "Detail" : {
       "comment" : "Navigation title for the barcode detail screen",
       "localizations" : {
@@ -5832,6 +5842,7 @@
     },
     "Done selecting" : {
       "comment" : "History: done selecting button",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6599,7 +6610,7 @@
       }
     },
     "Exits selection mode" : {
-      "comment" : "History: done selecting hint",
+      "comment" : "History: cancel selecting hint",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11339,6 +11350,9 @@
         }
       }
     },
+    "Select All" : {
+      "comment" : "History: select all button label"
+    },
     "Select barcodes" : {
       "comment" : "History: select barcodes button",
       "localizations" : {
@@ -11403,6 +11417,9 @@
           }
         }
       }
+    },
+    "Select Items" : {
+      "comment" : "History: no items selected in batch mode"
     },
     "Send Email" : {
       "comment" : "Action label for email payload",

@@ -48,7 +48,7 @@ struct HistoryView: View {
         filterFavorites || sourceFilter != .all || selectedTag != nil
     }
 
-    private var filteredBarcodes: [ScannedBarcode] {
+    var filteredBarcodes: [ScannedBarcode] {
         var result = barcodes
 
         if !searchText.isEmpty {
@@ -179,8 +179,12 @@ struct HistoryView: View {
         }
     }
 
+    private var listSelection: Binding<Set<PersistentIdentifier>>? {
+        isEditing ? $selectedBarcodeIDs : nil
+    }
+
     private var barcodeList: some View {
-        List(selection: isEditing ? $selectedBarcodeIDs : nil) {
+        List(selection: listSelection) {
             ForEach(groupedByDay, id: \.date) { group in
                 Section(sectionHeader(for: group.date)) {
                     ForEach(group.barcodes) { barcode in
@@ -199,31 +203,40 @@ struct HistoryView: View {
         .environment(\.editMode, $editMode)
         .searchable(text: $searchText, prompt: "Search barcodes")
         .navigationTitle("History")
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                selectButton
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                if isEditing {
-                    EmptyView()
-                } else {
-                    trailingToolbar
-                }
-            }
-        }
+        .toolbar(content: historyToolbar)
         .safeAreaInset(edge: .bottom) {
-            if isEditing {
-                batchToolbar
-                    .padding(.horizontal)
-                    .padding(.vertical, 10)
-                    .background(.bar)
-            }
+            batchToolbar
+                .padding(.vertical, 10)
+                .opacity(isEditing ? 1 : 0)
+                .allowsHitTesting(isEditing)
         }
         .navigationDestination(item: $selectedBarcode) { barcode in
             BarcodeDetailView(barcode: barcode)
         }
         .overlay {
             emptyStateOverlay
+        }
+    }
+
+    // MARK: - Toolbar
+
+    @ToolbarContentBuilder
+    private func historyToolbar() -> some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            selectButton
+        }
+        if isEditing {
+            ToolbarItem(placement: .topBarTrailing) {
+                HStack(spacing: 8) {
+                    editingSelectAllButton
+                    editingTagButton
+                }
+            }   
+            .sharedBackgroundVisibility(.hidden)
+        } else {
+            ToolbarItem(placement: .topBarTrailing) {
+                trailingToolbar
+            }
         }
     }
 
