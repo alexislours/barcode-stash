@@ -126,9 +126,11 @@ final class BarcodeScannerViewController: UIViewController {
 
     private func applyTorch() {
         guard let device = videoDevice, device.hasTorch else { return }
-        try? device.lockForConfiguration()
-        device.torchMode = desiredTorchOn ? .on : .off
-        device.unlockForConfiguration()
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = desiredTorchOn ? .on : .off
+            device.unlockForConfiguration()
+        } catch {}
     }
 
     func setZoom(_ factor: CGFloat) {
@@ -136,9 +138,11 @@ final class BarcodeScannerViewController: UIViewController {
         let maxZoom = min(device.activeFormat.videoMaxZoomFactor, 20.0)
         let clamped = min(max(factor, 1.0), maxZoom)
         guard abs(device.videoZoomFactor - clamped) > 0.01 else { return }
-        try? device.lockForConfiguration()
-        device.videoZoomFactor = clamped
-        device.unlockForConfiguration()
+        do {
+            try device.lockForConfiguration()
+            device.videoZoomFactor = clamped
+            device.unlockForConfiguration()
+        } catch {}
     }
 
     func updateAllowedTypes(_ types: [AVMetadataObject.ObjectType]) {
@@ -159,9 +163,11 @@ final class BarcodeScannerViewController: UIViewController {
             let maxZoom = min(device.activeFormat.videoMaxZoomFactor, 20.0)
             let desired = lastZoomFactor * gesture.scale
             let clamped = min(max(desired, 1.0), maxZoom)
-            try? device.lockForConfiguration()
-            device.videoZoomFactor = clamped
-            device.unlockForConfiguration()
+            do {
+                try device.lockForConfiguration()
+                device.videoZoomFactor = clamped
+                device.unlockForConfiguration()
+            } catch { break }
             onZoomChanged?(clamped)
         default:
             break
