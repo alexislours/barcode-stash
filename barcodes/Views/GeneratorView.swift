@@ -7,6 +7,7 @@ struct GeneratorView: View {
     @State private var inputText = ""
     @State private var descriptionText = ""
     @State private var showSavedConfirmation = false
+    @State private var isSaving = false
     @State private var previewImage: UIImage?
     @FocusState private var focusedField: Field?
 
@@ -234,11 +235,13 @@ struct GeneratorView: View {
                     Spacer()
                 }
             }
-            .disabled(!validation.isValid)
+            .disabled(!validation.isValid || isSaving)
         }
     }
 
     private func save() {
+        isSaving = true
+
         let barcode = createBarcodeWithOptions(rawValue: inputText, type: selectedType)
         barcode.barcodeDescription = descriptionText.isEmpty ? nil : descriptionText
         barcode.isGenerated = true
@@ -257,6 +260,7 @@ struct GeneratorView: View {
             }
             onSave?(barcode)
             resetForm()
+            isSaving = false
         }
     }
 
