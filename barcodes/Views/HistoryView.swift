@@ -231,7 +231,7 @@ struct HistoryView: View {
                     editingSelectAllButton
                     editingTagButton
                 }
-            }   
+            }
             .sharedBackgroundVisibility(.hidden)
         } else {
             ToolbarItem(placement: .topBarTrailing) {
