@@ -3,14 +3,33 @@ default_platform(:ios)
 platform :ios do
   desc "Capture App Store screenshots with mock data (2-at-a-time parallelism)"
   lane :screenshots do
+    run_screenshots(
+      device_type: "iPhone 17 Pro Max",
+      output: "./screenshots",
+      sim_prefix: "Screenshot"
+    )
+  end
+
+  desc "Capture iPad App Store screenshots with mock data (2-at-a-time parallelism)"
+  lane :screenshots_ipad do
+    run_screenshots(
+      device_type: "iPad Pro 13-inch (M4)",
+      output: "./screenshots_ipad",
+      sim_prefix: "Screenshot-iPad"
+    )
+  end
+
+  private_lane :run_screenshots do |options|
+    device_type = options[:device_type]
+    output      = options[:output]
+    sim_prefix  = options[:sim_prefix]
+
     project_root = File.expand_path("..", __dir__)
     project = File.join(project_root, "barcodes.xcodeproj")
     derived_data = File.join(project_root, "build")
 
-    device_type = "iPhone 17 Pro Max"
     runtime = "com.apple.CoreSimulator.SimRuntime.iOS-26-2"
     cache_screenshots = File.expand_path("~/Library/Caches/tools.fastlane/screenshots")
-    output = "./screenshots"
     concurrency = 2
 
     languages = [
@@ -74,13 +93,12 @@ platform :ios do
         # plists that could override our language setting. iOS then derives the
         # correct keyboard layout from AppleLanguages on first boot.
         batch.each do |entry|
-          sim_name = "Screenshot-#{entry[:lang]}"
+          sim_name = "#{sim_prefix}-#{entry[:lang]}"
 
           if existing_sims.key?(sim_name)
             udid = existing_sims[sim_name]
             UI.message("Reusing simulator #{sim_name} (#{udid})...")
             system("xcrun simctl shutdown #{udid} 2>/dev/null")
-            # system("xcrun simctl uninstall #{udid} com.alexislours.barcodes-app 2>/dev/null")
           else
             udid = `xcrun simctl create "#{sim_name}" #{device_type_id} #{runtime}`.strip
             UI.user_error!("Failed to create simulator for #{entry[:lang]}") if udid.empty?

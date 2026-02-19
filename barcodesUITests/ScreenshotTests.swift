@@ -71,6 +71,24 @@ final class ScreenshotTests: XCTestCase, @unchecked Sendable {
         XCTContext.runActivity(named: name) { @MainActor _ in action() }
     }
 
+    /// Taps a tab bar button by its accessibilityIdentifier.
+    /// On iPad, the tab bar may have extra system elements that shift button indices,
+    /// so we always look up by identifier rather than by index.
+    private func tapTab(_ identifier: String) {
+        // Look inside the tab bar first; fall back to any button in the app
+        // to handle iPad layouts where the tab bar is not a standard UITabBar.
+        // Use firstMatch throughout — iOS 26's redesigned tab bar can surface
+        // multiple elements with the same identifier (pill container + button).
+        let inTabBar = app.tabBars.buttons.matching(identifier: identifier).firstMatch
+        if inTabBar.waitForExistence(timeout: 3) {
+            inTabBar.tap()
+            return
+        }
+        let anyButton = app.buttons.matching(identifier: identifier).firstMatch
+        XCTAssertTrue(anyButton.waitForExistence(timeout: 5), "Tab button '\(identifier)' not found")
+        anyButton.tap()
+    }
+
     private func captureScreenshots(language: String) {
         captureHistoryScreenshots(language: language)
         captureGeneratorScreenshots()
@@ -146,23 +164,43 @@ final class ScreenshotTests: XCTestCase, @unchecked Sendable {
         }
 
         step("09-Search (\(Self.searchTerms[language] ?? "grocery"))") {
-            // Swipe down on the list to reveal the search bar
             let list = app.collectionViews.firstMatch
             XCTAssertTrue(list.waitForExistence(timeout: 5))
-            list.swipeDown()
 
             let searchField = app.searchFields.firstMatch
-            XCTAssertTrue(searchField.waitForExistence(timeout: 5))
+
+            // On iPad (regular width), a custom search button sits in the navigation bar.
+            // On iPhone (compact width), swipe down on the list to reveal the search bar.
+            // .searchable uses .navigationBarDrawer placement so the tab bar pill never
+            // gets an automatic search affordance — only one search button exists on iPad.
+            let searchButton = app.navigationBars.buttons["search-button"]
+            if searchButton.exists {
+                // iPad: tap the nav bar search button directly.
+                // Do NOT swipe first — the bounce animation leaves the button non-hittable.
+                searchButton.tap()
+                XCTAssertTrue(searchField.waitForExistence(timeout: 5))
+            } else {
+                // iPhone: swipe down on the list to reveal the inline search bar.
+                list.swipeDown()
+                XCTAssertTrue(searchField.waitForExistence(timeout: 5))
+            }
+
             searchField.tap()
             let searchTerm = Self.searchTerms[language] ?? "grocery"
             searchField.typeText(searchTerm)
             sleep(1)
             snapshot("09-Search")
 
-            // Dismiss search - the cancel/close button is the only nav bar button when search is active
-            let cancelSearch = app.navigationBars.buttons.firstMatch
-            XCTAssertTrue(cancelSearch.waitForExistence(timeout: 3))
-            cancelSearch.tap()
+            // Dismiss search and keyboard.
+            // On iPhone: the only nav bar button when search is active is Cancel — tap firstMatch.
+            // On iPad: multiple nav bar buttons exist (leading select button, trailing photo/stats/filter);
+            //   firstMatch would tap the wrong element. Instead re-tap search-button which now toggles
+            //   isSearchPresented off, dismissing the search bar and keyboard together.
+            if searchButton.exists {
+                searchButton.tap()
+            } else {
+                app.navigationBars.buttons.firstMatch.tap()
+            }
         }
     }
 
@@ -170,8 +208,7 @@ final class ScreenshotTests: XCTestCase, @unchecked Sendable {
 
     private func captureGeneratorScreenshots() {
         step("03-Generator-QR") {
-            // Navigate to Create tab (index 1) - avoids localized tab label
-            app.tabBars.buttons.element(boundBy: 1).tap()
+            tapTab("tab-create")
 
             // QR is the default type - type a URL into the TextEditor
             let textEditor = app.textViews["barcode-input-editor"]
@@ -214,15 +251,13 @@ final class ScreenshotTests: XCTestCase, @unchecked Sendable {
 
     private func captureMapAndScannerScreenshots() {
         step("04-Map") {
-            // Navigate to Map tab (index 2)
-            app.tabBars.buttons.element(boundBy: 2).tap()
+            tapTab("tab-map")
             sleep(3) // Wait for map tiles to load
             snapshot("04-Map")
         }
 
         step("05-Scanner") {
-            // Navigate to Barcodes tab (index 0)
-            app.tabBars.buttons.element(boundBy: 0).tap()
+            tapTab("tab-barcodes")
 
             let scanButton = app.buttons["scan-barcode-button"]
             XCTAssertTrue(scanButton.waitForExistence(timeout: 5))

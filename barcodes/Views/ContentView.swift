@@ -56,6 +56,7 @@ struct ContentView: View {
                     }
                 )
             }
+            .accessibilityIdentifier("tab-barcodes")
 
             Tab("Create", systemImage: "wand.and.stars", value: 1) {
                 GeneratorView(onSave: { barcode in
@@ -63,14 +64,17 @@ struct ContentView: View {
                     selectedTab = 0
                 })
             }
+            .accessibilityIdentifier("tab-create")
 
             Tab("Map", systemImage: "map", value: 2) {
                 MapView()
             }
+            .accessibilityIdentifier("tab-map")
 
             Tab("Settings", systemImage: "gear", value: 3) {
                 SettingsView()
             }
+            .accessibilityIdentifier("tab-settings")
         }
         .tabViewStyle(.tabBarOnly)
         .onChange(of: pendingSharedImageScan) {

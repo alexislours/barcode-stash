@@ -8,7 +8,9 @@ struct HistoryView: View {
     @Binding var selectedBarcode: ScannedBarcode?
     @Binding var isSelectMode: Bool
     @Binding var pendingSharedImageScan: Bool
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var searchText = ""
+    @State private var isSearchPresented = false
     @State private var filterFavorites = false
     @State private var sourceFilter: HistorySourceFilter = .all
     @State private var selectedTag: String?
@@ -201,7 +203,7 @@ struct HistoryView: View {
             }
         }
         .environment(\.editMode, $editMode)
-        .searchable(text: $searchText, prompt: "Search barcodes")
+        .searchable(text: $searchText, isPresented: $isSearchPresented, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search barcodes")
         .navigationTitle("History")
         .toolbar(content: historyToolbar)
         .safeAreaInset(edge: .bottom) {
@@ -245,6 +247,12 @@ struct HistoryView: View {
     private var trailingToolbar: some View {
         let scanning = isImageScanning
         return HStack(spacing: 12) {
+            if horizontalSizeClass == .regular {
+                Button { isSearchPresented.toggle() } label: {
+                    Image(systemName: "magnifyingglass")
+                }
+                .accessibilityIdentifier("search-button")
+            }
             PhotosPicker(selection: $selectedPhotoItems, matching: .images) {
                 if scanning {
                     ProgressView()

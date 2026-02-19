@@ -12,6 +12,7 @@ build/
 fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/
+fastlane/screenshots_ipad/
 fastlane/test_output/
 
 # App Store screenshots

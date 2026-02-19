@@ -23,6 +23,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Capture App Store screenshots with mock data (2-at-a-time parallelism)
 
+### ios screenshots_ipad
+
+```sh
+[bundle exec] fastlane ios screenshots_ipad
+```
+
+Capture iPad App Store screenshots with mock data (2-at-a-time parallelism)
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
