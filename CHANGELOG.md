@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - vCard contact preview showing parsed name, phone, and email with interactive `CNContactViewController` for review before saving
 - vEvent and vCalendar event preview showing title, dates, and location with `EKEventEditViewController` for review before saving
 - In-app SMS composition via `MFMessageComposeViewController` with multi-recipient support
+- iPad screenshot automation via `fastlane screenshots_ipad` lane targeting iPad Pro 13-inch (M4)
+- Screenshot organize script (`organize_screenshots.sh`) that reorganizes per-locale folders into per-screen folders for App Store Connect upload
+- Accessibility identifiers on all four tab bar buttons (`tab-barcodes`, `tab-create`, `tab-map`, `tab-settings`)
 
 ### Changed
 
@@ -40,6 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Photo library scanning now uses `Data`-based pipeline with downsampling instead of loading full `UIImage` into memory
 - Lint and format Makefile targets now include `ShareExtension/` directory
 - `CURRENT_PROJECT_VERSION` and `MARKETING_VERSION` moved from target-level to project-level build settings
+- Screenshot tests use accessibility identifiers for tab navigation instead of index-based lookup, fixing iPad layouts where extra system elements shift button indices
+- Fastlane screenshot infrastructure refactored into a shared `run_screenshots` private lane used by both iPhone and iPad pipelines
 
 ### Removed
 
