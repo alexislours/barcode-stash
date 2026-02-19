@@ -85,7 +85,7 @@ enum DataMatrixEncoder {
 
     protocol ModeEncoder {
         var encodingMode: EncodingMode { get }
-        func encode(_ ctx: EncoderContext) throws
+        func encode(_ ctx: EncoderContext)
     }
 
     // MARK: - Encoder Context
@@ -98,7 +98,7 @@ enum DataMatrixEncoder {
         var skipAtEnd: Int = 0
         var symbolInfo: SymbolInfo?
 
-        init(message: String) throws {
+        init(message: String) throws(EncodingError) {
             guard let data = message.data(using: .isoLatin1) else {
                 throw EncodingError.invalidCharacter
             }
@@ -179,7 +179,7 @@ enum DataMatrixEncoder {
 
     // MARK: - High-Level Encoder
 
-    static func encodeHighLevel(_ text: String) throws -> [UInt8] {
+    static func encodeHighLevel(_ text: String) throws(EncodingError) -> [UInt8] {
         let encoders: [any ModeEncoder] = [
             ASCIIEncoder(), C40Encoder(), TextEncoder(),
             X12Encoder(), EdifactEncoder(), Base256Encoder(),
@@ -189,7 +189,7 @@ enum DataMatrixEncoder {
         var encodingMode = EncodingMode.ascii
 
         while ctx.hasMoreCharacters {
-            try encoders[encodingMode.rawValue].encode(ctx)
+            encoders[encodingMode.rawValue].encode(ctx)
             if ctx.newEncoding >= 0 {
                 encodingMode = EncodingMode(
                     rawValue: ctx.newEncoding

@@ -8,7 +8,7 @@ extension DataMatrixEncoder {
     struct ASCIIEncoder: ModeEncoder {
         let encodingMode = EncodingMode.ascii
 
-        func encode(_ ctx: EncoderContext) throws {
+        func encode(_ ctx: EncoderContext) {
             let digitCount = consecutiveDigitCount(
                 ctx.message, startpos: ctx.pos
             )
@@ -166,7 +166,7 @@ extension DataMatrixEncoder {
     struct C40Encoder: ModeEncoder {
         let encodingMode = EncodingMode.c40
 
-        func encode(_ ctx: EncoderContext) throws {
+        func encode(_ ctx: EncoderContext) {
             var buffer: [UInt8] = []
             while ctx.hasMoreCharacters {
                 let char = ctx.currentChar
@@ -223,7 +223,7 @@ extension DataMatrixEncoder {
     struct TextEncoder: ModeEncoder {
         let encodingMode = EncodingMode.text
 
-        func encode(_ ctx: EncoderContext) throws {
+        func encode(_ ctx: EncoderContext) {
             var buffer: [UInt8] = []
             while ctx.hasMoreCharacters {
                 let char = ctx.currentChar

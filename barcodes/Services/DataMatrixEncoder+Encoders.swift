@@ -8,7 +8,7 @@ extension DataMatrixEncoder {
     struct X12Encoder: ModeEncoder {
         let encodingMode = EncodingMode.x12
 
-        func encode(_ ctx: EncoderContext) throws {
+        func encode(_ ctx: EncoderContext) {
             var buffer: [UInt8] = []
             while ctx.hasMoreCharacters {
                 let char = ctx.currentChar
@@ -69,7 +69,7 @@ extension DataMatrixEncoder {
     struct EdifactEncoder: ModeEncoder {
         let encodingMode = EncodingMode.edifact
 
-        func encode(_ ctx: EncoderContext) throws {
+        func encode(_ ctx: EncoderContext) {
             var buffer: [UInt8] = []
             while ctx.hasMoreCharacters {
                 let char = ctx.currentChar
@@ -190,7 +190,7 @@ extension DataMatrixEncoder {
     struct Base256Encoder: ModeEncoder {
         let encodingMode = EncodingMode.base256
 
-        func encode(_ ctx: EncoderContext) throws {
+        func encode(_ ctx: EncoderContext) {
             var buffer: [UInt8] = [0] // length placeholder
             while ctx.hasMoreCharacters {
                 buffer.append(ctx.currentChar)
