@@ -1,3 +1,4 @@
+import AVFoundation
 import CoreLocation
 import SwiftData
 import SwiftUI
@@ -5,6 +6,8 @@ import SwiftUI
 struct ScannerView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var cameraStatus = AVCaptureDevice.authorizationStatus(for: .video)
     @State private var scannedValue: String?
     @State private var scannedType: BarcodeType?
     @State private var scannedDescriptorArchive: Data?
@@ -46,6 +49,10 @@ struct ScannerView: View {
         #endif
     }
 
+    private var isCameraDenied: Bool {
+        cameraStatus == .denied || cameraStatus == .restricted
+    }
+
     private var screenshotBackground: UIImage? {
         #if DEBUG
             guard let arg = ProcessInfo.processInfo.arguments.first(where: {
@@ -56,6 +63,46 @@ struct ScannerView: View {
         #else
             return nil
         #endif
+    }
+
+    private var cameraDeniedView: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 36, height: 36)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.top, 8)
+
+            Spacer()
+
+            ContentUnavailableView {
+                Label(
+                    String(localized: "Camera Access Required", comment: "Scanner: camera denied title"),
+                    systemImage: "camera.fill"
+                )
+            } description: {
+                Text("Allow camera access in Settings to scan barcodes.",
+                     comment: "Scanner: camera denied description")
+            } actions: {
+                Button(String(localized: "Open Settings", comment: "Scanner: camera denied open settings button")) {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            }
+
+            Spacer()
+        }
+        .environment(\.colorScheme, .dark)
     }
 
     var body: some View {
@@ -74,6 +121,9 @@ struct ScannerView: View {
                     Color(white: 0.06)
                         .ignoresSafeArea()
                 }
+            } else if isCameraDenied {
+                Color.black
+                    .ignoresSafeArea()
             } else {
                 BarcodeScannerRepresentable(
                     isTorchOn: $isTorchOn,
@@ -89,42 +139,46 @@ struct ScannerView: View {
                 .ignoresSafeArea()
             }
 
-            VStack {
-                ScannerControlBar(
-                    isBulkMode: $isBulkMode,
-                    isTorchOn: $isTorchOn,
-                    allowedTypes: $allowedTypes,
-                    bulkSavedCount: bulkSavedCount,
-                    hasOverlayCard: hasOverlayCard,
-                    onDismiss: { dismiss() }
+            if isCameraDenied {
+                cameraDeniedView
+            } else {
+                VStack {
+                    ScannerControlBar(
+                        isBulkMode: $isBulkMode,
+                        isTorchOn: $isTorchOn,
+                        allowedTypes: $allowedTypes,
+                        bulkSavedCount: bulkSavedCount,
+                        hasOverlayCard: hasOverlayCard,
+                        onDismiss: { dismiss() }
+                    )
+
+                    Spacer()
+
+                    if scannedValue == nil || isBulkMode, zoomPresets.count > 1 {
+                        ScannerZoomButtons(presets: zoomPresets, zoomFactor: $zoomFactor)
+                            .padding(.bottom, isBulkMode && bulkSavedCount > 0 ? 12 : 40)
+                    }
+
+                    if isBulkMode, bulkSavedCount > 0 || bulkSkippedCount > 0 {
+                        ScannerBulkCountBadge(savedCount: bulkSavedCount, skippedCount: bulkSkippedCount)
+                            .padding(.bottom, 40)
+                    }
+                }
+
+                ScannerResultOverlay(
+                    showScanResult: showScanResult,
+                    isBulkMode: isBulkMode,
+                    scannedValue: scannedValue,
+                    scannedType: scannedType,
+                    scannedDescriptorArchive: scannedDescriptorArchive,
+                    duplicateBarcode: duplicateBarcode,
+                    barcodeBounds: barcodeBounds,
+                    location: locationManager.lastLocation,
+                    onSave: onSave,
+                    onDismiss: { dismiss() },
+                    onResetScan: resetScan
                 )
-
-                Spacer()
-
-                if scannedValue == nil || isBulkMode, zoomPresets.count > 1 {
-                    ScannerZoomButtons(presets: zoomPresets, zoomFactor: $zoomFactor)
-                        .padding(.bottom, isBulkMode && bulkSavedCount > 0 ? 12 : 40)
-                }
-
-                if isBulkMode, bulkSavedCount > 0 || bulkSkippedCount > 0 {
-                    ScannerBulkCountBadge(savedCount: bulkSavedCount, skippedCount: bulkSkippedCount)
-                        .padding(.bottom, 40)
-                }
             }
-
-            ScannerResultOverlay(
-                showScanResult: showScanResult,
-                isBulkMode: isBulkMode,
-                scannedValue: scannedValue,
-                scannedType: scannedType,
-                scannedDescriptorArchive: scannedDescriptorArchive,
-                duplicateBarcode: duplicateBarcode,
-                barcodeBounds: barcodeBounds,
-                location: locationManager.lastLocation,
-                onSave: onSave,
-                onDismiss: { dismiss() },
-                onResetScan: resetScan
-            )
         }
         .onAppear(perform: resetScannerState)
         .statusBarHidden()
@@ -132,6 +186,11 @@ struct ScannerView: View {
             proxy.size
         } action: { newSize in
             viewSize = newSize
+        }
+        .onChange(of: scenePhase) {
+            if scenePhase == .active {
+                cameraStatus = AVCaptureDevice.authorizationStatus(for: .video)
+            }
         }
         .task {
             guard isScreenshotMode else { return }

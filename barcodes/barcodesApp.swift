@@ -14,7 +14,11 @@ struct BarcodesApp: App {
         let schema = Schema([
             ScannedBarcode.self,
         ])
-        let inMemory = ProcessInfo.processInfo.arguments.contains("--screenshots")
+        #if DEBUG
+            let inMemory = ProcessInfo.processInfo.arguments.contains("--screenshots")
+        #else
+            let inMemory = false
+        #endif
 
         let modelConfiguration = if inMemory {
             ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
