@@ -9,13 +9,16 @@ struct DatabaseErrorView: View {
 
     var body: some View {
         ContentUnavailableView {
-            Label("Database Error", systemImage: "exclamationmark.triangle")
+            Label(
+                String(localized: "Database Error", comment: "Database error: title shown when SwiftData fails to load"),
+                systemImage: "exclamationmark.triangle"
+            )
         } description: {
             Text(
-                """
+                String(localized: """
                 The app database could not be loaded. \
                 This can happen after an update or if the database was corrupted.
-                """
+                """, comment: "Database error: explanation of why the database failed")
             )
             if let errorMessage {
                 Text(errorMessage)
@@ -25,22 +28,51 @@ struct DatabaseErrorView: View {
             }
         } actions: {
             VStack(spacing: 12) {
-                Button("Retry", action: onRetry)
-                Button("Reset Database", role: .destructive) {
+                Button(
+                    String(localized: "Retry", comment: "Database error: retry loading the database"),
+                    action: onRetry
+                )
+                Button(
+                    String(localized: "Reset Database", comment: "Database error: destructive button to recreate database"),
+                    role: .destructive
+                ) {
                     showResetConfirmation = true
                 }
             }
         }
         .confirmationDialog(
-            "Reset Database?",
+            String(localized: "Reset Database?", comment: "Database error: confirmation dialog title"),
             isPresented: $showResetConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Delete All Data & Reset", role: .destructive, action: onReset)
+            Button(
+                String(localized: "Delete All Data & Reset", comment: "Database error: confirm destructive reset button"),
+                role: .destructive,
+                action: onReset
+            )
         } message: {
             Text(
-                "This will delete all locally stored barcodes. Data synced to iCloud may be recoverable after reset."
+                String(
+                    localized: "This will delete all locally stored barcodes. Data synced to iCloud may be recoverable after reset.",
+                    comment: "Database error: confirmation dialog explaining consequences of reset"
+                )
             )
         }
     }
+}
+
+#Preview("With error message") {
+    DatabaseErrorView(
+        errorMessage: "The model configuration is incompatible with the existing store.",
+        onRetry: {},
+        onReset: {}
+    )
+}
+
+#Preview("Without error message") {
+    DatabaseErrorView(
+        errorMessage: nil,
+        onRetry: {},
+        onReset: {}
+    )
 }

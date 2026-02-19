@@ -5091,6 +5091,65 @@
         }
       }
     },
+    "Database Error" : {
+      "comment" : "Database error: title shown when SwiftData fails to load",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenbankfehler"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error de la base de datos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur de base de données"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Errore del database"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データベースエラー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데이터베이스 오류"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erro no Banco de Dados"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据库错误"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資料庫錯誤"
+          }
+        }
+      }
+    },
     "Date" : {
       "comment" : "Toggle label in share sheet to include the scan date",
       "localizations" : {
@@ -5477,6 +5536,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "刪除所有條碼"
+          }
+        }
+      }
+    },
+    "Delete All Data & Reset" : {
+      "comment" : "Database error: confirm destructive reset button",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Daten löschen & zurücksetzen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar todos los datos y restablecer"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer toutes les données et réinitialiser"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina tutti i dati e ripristina"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべてのデータを削除してリセット"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모든 데이터 삭제 및 재설정"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagar Todos os Dados e Redefinir"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除所有数据并重置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除所有資料並重置"
           }
         }
       }
@@ -10346,6 +10464,124 @@
         }
       }
     },
+    "Reset Database" : {
+      "comment" : "Database error: destructive button to recreate database",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenbank zurücksetzen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer base de datos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser la base de données"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina database"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データベースをリセット"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데이터베이스 재설정"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redefinir Banco de Dados"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置数据库"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置資料庫"
+          }
+        }
+      }
+    },
+    "Reset Database?" : {
+      "comment" : "Database error: confirmation dialog title",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenbank zurücksetzen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Restablecer base de datos?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser la base de données ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristinare il database?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データベースをリセットしますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데이터베이스를 재설정하시겠습니까?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redefinir Banco de Dados?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置数据库？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置資料庫？"
+          }
+        }
+      }
+    },
     "Reset map view" : {
       "comment" : "Map: reset view button",
       "localizations" : {
@@ -10477,7 +10713,7 @@
       }
     },
     "Retry" : {
-      "comment" : "Button to retry fetching GPS location after an error",
+      "comment" : "Database error: retry loading the database",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13166,6 +13402,124 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "文本"
+          }
+        }
+      }
+    },
+    "The app database could not be loaded. This can happen after an update or if the database was corrupted." : {
+      "comment" : "Database error: explanation of why the database failed",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die App-Datenbank konnte nicht geladen werden. Dies kann nach einem Update auftreten oder wenn die Datenbank beschädigt wurde."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo cargar la base de datos de la aplicación. Esto puede ocurrir después de una actualización o si la base de datos está dañada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La base de données de l'application n'a pas pu être chargée. Cela peut se produire après une mise à jour ou si la base de données est corrompue."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile caricare il database dell'app. Ciò può accadere dopo un aggiornamento o se il database è danneggiato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリのデータベースを読み込めませんでした。これはアップデート後、またはデータベースが破損している場合に発生する可能性があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 데이터베이스를 로드할 수 없습니다. 이는 업데이트 후 또는 데이터베이스가 손상된 경우에 발생할 수 있습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível carregar o banco de dados do aplicativo. Isso pode acontecer após uma atualização ou se o banco de dados estiver corrompido."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法加载应用数据库。这可能发生在更新后，或者数据库已损坏。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法載入應用程式資料庫。這可能發生在更新後，或者資料庫已損毀。"
+          }
+        }
+      }
+    },
+    "This will delete all locally stored barcodes. Data synced to iCloud may be recoverable after reset." : {
+      "comment" : "Database error: confirmation dialog explaining consequences of reset",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dadurch werden alle lokal gespeicherten Barcodes gelöscht. Mit iCloud synchronisierte Daten können nach dem Zurücksetzen möglicherweise wiederhergestellt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esto eliminará todos los códigos de barras almacenados localmente. Los datos sincronizados con iCloud pueden ser recuperables después del restablecimiento."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cela supprimera tous les codes-barres stockés localement. Les données synchronisées avec iCloud peuvent être récupérables après la réinitialisation."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo eliminerà tutti i codici a barre memorizzati localmente. I dati sincronizzati su iCloud potrebbero essere recuperabili dopo il ripristino."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これにより、ローカルに保存されているすべてのバーコードが削除されます。iCloudに同期されたデータは、リセット後に復元できる可能性があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이렇게 하면 로컬에 저장된 모든 바코드가 삭제됩니다. iCloud에 동기화된 데이터는 재설정 후 복구할 수 있습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Isso apagará todos os códigos de barras armazenados localmente. Os dados sincronizados com o iCloud poderão ser recuperados após a redefinição."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这将删除所有本地存储的条形码。同步到 iCloud 的数据在重置后可能可以恢复。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這將刪除所有本地存儲的條形碼。同步到 iCloud 的資料在重置後可能可以恢復。"
           }
         }
       }
