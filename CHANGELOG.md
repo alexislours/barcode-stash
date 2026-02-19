@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `ModelContainer` initialization failure no longer crashes the app with `fatalError`; shows a recovery UI with retry and reset options instead
 - Improved performance for swipe actions on barcode rows in `HistoryView`
 - Scanner now shows a "Camera Access Required" screen with an "Open Settings" button when camera permission is denied or restricted, instead of a blank view
 - Camera permission status is re-checked when the app returns to the foreground, so granting access in Settings immediately updates the scanner
