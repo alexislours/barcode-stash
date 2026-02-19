@@ -32,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Screenshot organize script (`organize_screenshots.sh`) that reorganizes per-locale folders into per-screen folders for App Store Connect upload
 - Accessibility identifiers on all four tab bar buttons (`tab-barcodes`, `tab-create`, `tab-map`, `tab-settings`)
 
+### Fixed
+
+- Improved performance for swipe actions on barcode rows in `HistoryView`
+
 ### Changed
 
 - Redesigned selection mode UI in `HistoryView`
