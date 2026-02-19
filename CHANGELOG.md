@@ -38,7 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `DataMatrixEncoder`: replaced `[any ModeEncoder]` existential array with `AnyModeEncoder` enum for static dispatch; removed `ModeEncoder` protocol
 - `DataMatrixEncoder`: removed unnecessary `throws` from `ModeEncoder.encode()` protocol and all 6 implementations; added typed `throws(EncodingError)` to `encodeHighLevel` and `EncoderContext.init`
+- Release build: enabled `DEAD_CODE_STRIPPING` and `STRIP_SWIFT_SYMBOLS`; removed stale `NEW_SETTING`
 - Redesigned selection mode UI in `HistoryView`
 - Migrated project to Swift 6 strict concurrency (`SWIFT_VERSION = 6.0`)
 - Redesigned barcode action cards with color-coded icons, structured headers, and per-payload detail rows replacing the single-button layout
