@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Redesigned selection mode UI in `HistoryView`
 - Migrated project to Swift 6 strict concurrency (`SWIFT_VERSION = 6.0`)
 - Redesigned barcode action cards with color-coded icons, structured headers, and per-payload detail rows replacing the single-button layout
 - SMS parsing now supports multiple comma-separated recipients and colon-separated `SMSTO:number:message` format
