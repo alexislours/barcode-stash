@@ -10,6 +10,7 @@ struct BarcodeDetailView: View {
     @State private var showFullscreen = false
     @State private var newTagText = ""
     @State private var isAddingTag = false
+    @FocusState private var notesFieldFocused: Bool
     @FocusState private var tagFieldFocused: Bool
     @AppStorage("mapStyle") private var mapStyle: MapStyleOption = .standard
     @AppStorage("showAdvancedData") private var showAdvancedData = false
@@ -66,10 +67,14 @@ struct BarcodeDetailView: View {
 
                     TextField("Tap to add a note...", text: $descriptionText, axis: .vertical)
                         .lineLimit(1 ... 6)
-                        .onChange(of: descriptionText) {
-                            let trimmed = descriptionText.trimmingCharacters(in: .whitespacesAndNewlines)
-                            barcode.barcodeDescription = trimmed.isEmpty ? nil : trimmed
-                            barcode.lastModified = .now
+                        .focused($notesFieldFocused)
+                        .onSubmit {
+                            commitNotes()
+                        }
+                        .onChange(of: notesFieldFocused) {
+                            if !notesFieldFocused {
+                                commitNotes()
+                            }
                         }
                 }
                 .padding(12)
@@ -294,6 +299,12 @@ extension BarcodeDetailView {
     struct DescriptorRow {
         let label: String
         let value: String
+    }
+
+    func commitNotes() {
+        let trimmed = descriptionText.trimmingCharacters(in: .whitespacesAndNewlines)
+        barcode.barcodeDescription = trimmed.isEmpty ? nil : trimmed
+        barcode.lastModified = .now
     }
 
     func commitTag() {

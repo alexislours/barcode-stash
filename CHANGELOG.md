@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - vCard and iCal parsing now unfolds RFC 5545 / RFC 6350 continuation lines before splitting, so multi-line properties are read correctly
 - Geo URI parser trims whitespace around latitude/longitude values before parsing
 - `openPhone` sanitizes phone numbers by stripping non-digit characters (preserving leading `+`) to prevent malformed `tel:` URLs
+- `lastModified` in notes field now updates on focus loss or submit instead of every keystroke
 
 ### Changed
 
