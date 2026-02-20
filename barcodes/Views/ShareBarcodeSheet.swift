@@ -11,6 +11,7 @@ struct ShareBarcodeSheet: View {
     @AppStorage("shareShowDate") private var showDate = true
     @AppStorage("shareShowMap") private var showMap = true
     @AppStorage("shareShowAddress") private var showAddress = true
+    @State private var barcodeImage: UIImage?
     @State private var mapSnapshot: UIImage?
     @AppStorage("mapStyle") private var mapStyle: MapStyleOption = .standard
 
@@ -26,11 +27,9 @@ struct ShareBarcodeSheet: View {
         }
     }
 
-    private var barcodeImage: UIImage? {
-        BarcodeGenerator.generateImage(for: barcode, size: CGSize(width: 300, height: 300))
-    }
-
     var body: some View {
+        let shareImage = renderShareImage(barcodeImage: barcodeImage)
+
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
@@ -45,9 +44,9 @@ struct ShareBarcodeSheet: View {
 
                     Group {
                         if mode == .simple {
-                            simplePreview
+                            simplePreview(barcodeImage: barcodeImage)
                         } else {
-                            cardPreview
+                            cardPreview(barcodeImage: barcodeImage)
                         }
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -59,8 +58,8 @@ struct ShareBarcodeSheet: View {
                     }
 
                     ShareLink(
-                        item: renderedImage,
-                        preview: SharePreview(barcode.rawValue, image: renderedImage)
+                        item: shareImage,
+                        preview: SharePreview(barcode.rawValue, image: shareImage)
                     ) {
                         Label("Share", systemImage: "square.and.arrow.up")
                             .frame(maxWidth: .infinity)
@@ -79,6 +78,10 @@ struct ShareBarcodeSheet: View {
                 }
             }
             .task {
+                barcodeImage = BarcodeGenerator.generateImage(
+                    for: barcode,
+                    size: CGSize(width: 300, height: 300)
+                )
                 await loadMapSnapshot()
             }
         }
@@ -86,7 +89,7 @@ struct ShareBarcodeSheet: View {
 
     // MARK: - Simple Preview
 
-    private var simplePreview: some View {
+    private func simplePreview(barcodeImage: UIImage?) -> some View {
         VStack {
             if let barcodeImage {
                 Image(uiImage: barcodeImage)
@@ -103,7 +106,7 @@ struct ShareBarcodeSheet: View {
 
     // MARK: - Card Preview
 
-    private var cardPreview: some View {
+    private func cardPreview(barcodeImage: UIImage?) -> some View {
         ShareableBarcodeView(
             barcode: barcode,
             barcodeImage: barcodeImage,
@@ -138,9 +141,9 @@ struct ShareBarcodeSheet: View {
     // MARK: - Render
 
     @MainActor
-    private var renderedImage: Image {
+    private func renderShareImage(barcodeImage: UIImage?) -> Image {
         if mode == .simple {
-            if let uiImage = renderSimple() {
+            if let uiImage = renderSimple(barcodeImage: barcodeImage) {
                 return Image(uiImage: uiImage)
             }
             return Image(systemName: "barcode")
@@ -166,7 +169,7 @@ struct ShareBarcodeSheet: View {
     }
 
     @MainActor
-    private func renderSimple() -> UIImage? {
+    private func renderSimple(barcodeImage: UIImage?) -> UIImage? {
         guard let barcodeImage else { return nil }
         let padding: CGFloat = 40
         let size = CGSize(
