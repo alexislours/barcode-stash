@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Barcode preview in detail view now uses `Button` instead of `.onTapGesture`, adding proper VoiceOver button trait, hardware keyboard, and Switch Control support
 - Disk cache now enforces a 100 MB size cap with LRU eviction, deleting oldest files when the limit is exceeded
 - UPC-E check digit is now validated by expanding to UPC-A and running GS1 Mod-10 verification
 - Stats share image is now rendered on demand when the share button is tapped, instead of eagerly on every body evaluation

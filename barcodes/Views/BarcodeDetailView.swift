@@ -23,23 +23,25 @@ struct BarcodeDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                BarcodePreviewView(barcode: barcode, size: CGSize(width: 250, height: 250))
-                    .padding(.top)
-                    .onTapGesture {
-                        showFullscreen = true
-                    }
-                    .accessibilityLabel(
-                        String(
-                            localized: "\(barcode.type.rawValue) barcode preview",
-                            comment: "Detail: barcode image preview"
-                        )
+                Button {
+                    showFullscreen = true
+                } label: {
+                    BarcodePreviewView(barcode: barcode, size: CGSize(width: 250, height: 250))
+                        .padding(.top)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(
+                    String(
+                        localized: "\(barcode.type.rawValue) barcode preview",
+                        comment: "Detail: barcode image preview"
                     )
-                    .accessibilityHint(
-                        String(
-                            localized: "Double-tap to view fullscreen",
-                            comment: "Detail: barcode image preview hint"
-                        )
+                )
+                .accessibilityHint(
+                    String(
+                        localized: "Double-tap to view fullscreen",
+                        comment: "Detail: barcode image preview hint"
                     )
+                )
 
                 if let payload = BarcodePayloadParser.parse(rawValue: barcode.rawValue, type: barcode.type) {
                     BarcodeActionView(payload: payload)
