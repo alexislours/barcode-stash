@@ -34,7 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `CIDataMatrixCodeDescriptor` now receives data-only codewords instead of data+ECC, making the CIFilter descriptor path functional instead of always falling through to the custom renderer
 - `ModelContainer` initialization failure no longer crashes the app with `fatalError`; shows a recovery UI with retry and reset options instead
+- Database error view now uses localized strings
+- Screen brightness is restored after scanner use
+- `AVCaptureDevice` configuration changes are now guarded by `lockForConfiguration` to prevent crashes
+- Double-save race condition in `GeneratorView` prevented
+- Reuse a static `CIContext` in `BarcodeGenerator` instead of creating one per render
 - Improved performance for swipe actions on barcode rows in `HistoryView`
 - Scanner now shows a "Camera Access Required" screen with an "Open Settings" button when camera permission is denied or restricted, instead of a blank view
 - Camera permission status is re-checked when the app returns to the foreground, so granting access in Settings immediately updates the scanner
