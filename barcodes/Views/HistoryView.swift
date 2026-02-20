@@ -53,10 +53,10 @@ struct HistoryView: View {
 
         if !searchText.isEmpty {
             result = result.filter { barcode in
-                barcode.rawValue.localizedCaseInsensitiveContains(searchText)
-                    || barcode.type.rawValue.localizedCaseInsensitiveContains(searchText)
-                    || (barcode.barcodeDescription?.localizedCaseInsensitiveContains(searchText) ?? false)
-                    || barcode.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+                barcode.rawValue.localizedStandardContains(searchText)
+                    || barcode.type.rawValue.localizedStandardContains(searchText)
+                    || (barcode.barcodeDescription?.localizedStandardContains(searchText) ?? false)
+                    || barcode.tags.contains { $0.localizedStandardContains(searchText) }
             }
         }
 
