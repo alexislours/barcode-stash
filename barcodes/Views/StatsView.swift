@@ -3,6 +3,7 @@ import SwiftUI
 
 struct StatsView: View {
     @Query(sort: \ScannedBarcode.timestamp, order: .reverse) private var barcodes: [ScannedBarcode]
+    @State private var shareImage: UIImage?
 
     private var uniqueValueCount: Int {
         Set(barcodes.map(\.rawValue)).count
@@ -84,19 +85,25 @@ struct StatsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                ShareLink(
-                    item: renderedStatsImage,
-                    preview: SharePreview("Barcode Stats", image: renderedStatsImage)
-                ) {
+                Button {
+                    shareImage = renderStatsImage()
+                } label: {
                     Image(systemName: "square.and.arrow.up")
                 }
                 .disabled(barcodes.isEmpty)
             }
         }
+        .sheet(isPresented: .init(
+            get: { shareImage != nil },
+            set: { if !$0 { shareImage = nil } }
+        )) {
+            if let shareImage {
+                ShareSheetView(items: [shareImage])
+            }
+        }
     }
 
-    @MainActor
-    private var renderedStatsImage: Image {
+    private func renderStatsImage() -> UIImage? {
         let card = StatsCardView(
             totalBarcodes: barcodes.count,
             uniqueValues: uniqueValueCount,
@@ -108,10 +115,7 @@ struct StatsView: View {
         )
         let renderer = ImageRenderer(content: card)
         renderer.scale = 3
-        if let uiImage = renderer.uiImage {
-            return Image(uiImage: uiImage)
-        }
-        return Image(systemName: "chart.bar")
+        return renderer.uiImage
     }
 
     private func statRow(icon: String, label: String, value: String) -> some View {
