@@ -107,9 +107,10 @@ struct UPCETests {
         #expect(result.message.contains("8"))
     }
 
-    @Test func acceptsAnyCheckDigit() {
-        // UPC-E validation does not verify the check digit
-        #expect(BarcodeValidator.validate("04252610", for: .upce).isValid)
+    @Test func invalidCheckDigit() {
+        let result = BarcodeValidator.validate("04252610", for: .upce)
+        #expect(!result.isValid)
+        #expect(result.message.contains("check digit"))
     }
 }
 
