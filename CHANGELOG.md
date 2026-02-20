@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Removed redundant `fetchLimit = 0` in `existingBarcode()` that explicitly set the default unlimited fetch value
 - `continuousScannedKeys` is now cleared when restarting a bulk scan session, so previously-scanned barcodes can be rescanned after toggling bulk mode
 - Tag chip colors are now deterministic across app launches (replaced per-process `hashValue` with stable djb2 hash)
 - `CIDataMatrixCodeDescriptor` now receives data-only codewords instead of data+ECC, making the CIFilter descriptor path functional instead of always falling through to the custom renderer

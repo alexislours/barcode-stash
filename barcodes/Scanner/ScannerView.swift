@@ -324,12 +324,11 @@ struct ScannerView: View {
     }
 
     private func existingBarcode(rawValue: String, type: BarcodeType) -> ScannedBarcode? {
-        var descriptor = FetchDescriptor<ScannedBarcode>(
+        let descriptor = FetchDescriptor<ScannedBarcode>(
             predicate: #Predicate { barcode in
                 barcode.rawValue == rawValue
             }
         )
-        descriptor.fetchLimit = 0
         return try? modelContext.fetch(descriptor).first { $0.type == type }
     }
 }
