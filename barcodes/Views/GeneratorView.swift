@@ -179,7 +179,7 @@ struct GeneratorView: View {
                         .font(.subheadline)
                     Text(validation.message)
                         .font(.subheadline)
-                        .foregroundColor(validation.isValid ? .secondary : .red)
+                        .foregroundStyle(validation.isValid ? Color.secondary : .red)
                 }
             }
 

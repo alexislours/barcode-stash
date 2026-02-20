@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ModelContainer` initialization failure no longer crashes the app with `fatalError`; shows a recovery UI with retry and reset options instead
 - Database error view now uses localized strings
 - Screen brightness is restored after scanner use
+- Replaced deprecated `.foregroundColor()` with `.foregroundStyle()` on validation message text in generator view
 - `AVCaptureDevice` configuration changes are now guarded by `lockForConfiguration` to prevent crashes
 - Double-save race condition in `GeneratorView` prevented
 - Reuse a static `CIContext` in `BarcodeGenerator` instead of creating one per render
