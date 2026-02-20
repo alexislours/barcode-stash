@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Geo URI parser trims whitespace around latitude/longitude values before parsing
 - `openPhone` sanitizes phone numbers by stripping non-digit characters (preserving leading `+`) to prevent malformed `tel:` URLs
 - `lastModified` in notes field now updates on focus loss or submit instead of every keystroke
+- Share extension stale file cleanup no longer blocks the main thread
 
 ### Changed
 
