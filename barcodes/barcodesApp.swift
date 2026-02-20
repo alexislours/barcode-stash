@@ -18,7 +18,6 @@ struct BarcodesApp: App {
             _modelContainer = State(initialValue: container)
             _containerErrorMessage = State(initialValue: nil)
         case let .failure(error):
-            print("[BarcodesApp] ModelContainer initialization failed: \(error)")
             _modelContainer = State(initialValue: nil)
             _containerErrorMessage = State(initialValue: error.localizedDescription)
         }
@@ -68,7 +67,6 @@ struct BarcodesApp: App {
             modelContainer = container
             containerErrorMessage = nil
         case let .failure(error):
-            print("[BarcodesApp] ModelContainer retry failed: \(error)")
             containerErrorMessage = error.localizedDescription
         }
     }
@@ -92,9 +90,7 @@ struct BarcodesApp: App {
             if fileManager.fileExists(atPath: path) {
                 do {
                     try fileManager.removeItem(atPath: path)
-                } catch {
-                    print("[BarcodesApp] Failed to delete \(path): \(error)")
-                }
+                } catch {}
             }
         }
     }
