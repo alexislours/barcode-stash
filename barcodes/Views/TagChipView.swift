@@ -7,8 +7,16 @@ struct TagChipView: View {
 
     private var chipColor: Color {
         let colors: [Color] = [.blue, .purple, .pink, .orange, .teal, .indigo, .mint, .cyan]
-        let hash = abs(tag.hashValue)
-        return colors[hash % colors.count]
+        return colors[Self.stableHash(tag) % colors.count]
+    }
+
+    /// Deterministic djb2 hash
+    private static func stableHash(_ string: String) -> Int {
+        var hash: UInt64 = 5381
+        for byte in string.utf8 {
+            hash = hash &* 33 &+ UInt64(byte)
+        }
+        return Int(hash % UInt64(Int.max))
     }
 
     var body: some View {
