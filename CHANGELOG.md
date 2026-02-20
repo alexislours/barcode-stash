@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Stats share image is now rendered on demand when the share button is tapped, instead of eagerly on every body evaluation
 - Removed redundant `fetchLimit = 0` in `existingBarcode()` that explicitly set the default unlimited fetch value
 - `continuousScannedKeys` is now cleared when restarting a bulk scan session, so previously-scanned barcodes can be rescanned after toggling bulk mode
 - Tag chip colors are now deterministic across app launches (replaced per-process `hashValue` with stable djb2 hash)
