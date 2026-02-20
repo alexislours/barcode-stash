@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Tag chip colors are now deterministic across app launches (replaced per-process `hashValue` with stable djb2 hash)
 - `CIDataMatrixCodeDescriptor` now receives data-only codewords instead of data+ECC, making the CIFilter descriptor path functional instead of always falling through to the custom renderer
 - `ModelContainer` initialization failure no longer crashes the app with `fatalError`; shows a recovery UI with retry and reset options instead
 - Database error view now uses localized strings
