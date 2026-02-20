@@ -19,9 +19,17 @@ extension BarcodeActionView {
         return value.isEmpty ? nil : value
     }
 
+    /// Folded lines use CRLF + single whitespace (space or tab) as a continuation marker.
+    static func unfoldLines(_ text: String) -> String {
+        text.replacingOccurrences(of: "\r\n ", with: "")
+            .replacingOccurrences(of: "\r\n\t", with: "")
+            .replacingOccurrences(of: "\n ", with: "")
+            .replacingOccurrences(of: "\n\t", with: "")
+    }
+
     static func vCardSummary(_ raw: String) -> VCardSummary {
         var result = VCardSummary()
-        for line in raw.components(separatedBy: .newlines) {
+        for line in unfoldLines(raw).components(separatedBy: .newlines) {
             if result.name == nil, let value = vCardValue(line: line, property: "FN") {
                 result.name = value
             } else if result.phone == nil, let value = vCardValue(line: line, property: "TEL") {
@@ -52,14 +60,11 @@ extension BarcodeActionView {
 
     /// Extracts the VEVENT block from a VCALENDAR wrapper, or returns the input as-is.
     static func extractVEventBlock(_ raw: String) -> String {
-        let upper = raw.uppercased()
-        guard upper.contains("BEGIN:VCALENDAR"),
-              let startRange = upper.range(of: "BEGIN:VEVENT"),
-              let endRange = upper.range(of: "END:VEVENT")
+        guard raw.range(of: "BEGIN:VCALENDAR", options: .caseInsensitive) != nil,
+              let startRange = raw.range(of: "BEGIN:VEVENT", options: .caseInsensitive),
+              let endRange = raw.range(of: "END:VEVENT", options: .caseInsensitive)
         else { return raw }
-        let start = startRange.lowerBound
-        let end = endRange.upperBound
-        return String(raw[start ..< end])
+        return String(raw[startRange.lowerBound ..< endRange.upperBound])
     }
 
     static func parseICalDate(_ string: String) -> Date? {
@@ -80,7 +85,7 @@ extension BarcodeActionView {
 
     static func populateEvent(_ event: EKEvent, from raw: String) {
         let eventBlock = extractVEventBlock(raw)
-        for line in eventBlock.components(separatedBy: .newlines) {
+        for line in unfoldLines(eventBlock).components(separatedBy: .newlines) {
             if let value = iCalValue(line: line, property: "SUMMARY") {
                 event.title = value
             } else if let value = iCalValue(line: line, property: "DTSTART") {
@@ -103,7 +108,7 @@ extension BarcodeActionView {
     static func calendarEventSummary(_ raw: String) -> CalendarEventSummary {
         var result = CalendarEventSummary()
         let eventBlock = extractVEventBlock(raw)
-        for line in eventBlock.components(separatedBy: .newlines) {
+        for line in unfoldLines(eventBlock).components(separatedBy: .newlines) {
             if result.title == nil, let value = iCalValue(line: line, property: "SUMMARY") {
                 result.title = value
             } else if result.dateString == nil, let value = iCalValue(line: line, property: "DTSTART") {

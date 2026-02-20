@@ -242,7 +242,10 @@ struct BarcodeActionView: View {
     }
 
     private func openPhone(number: String) {
-        if let url = URL(string: "tel:\(number)") {
+        let hasPlus = number.hasPrefix("+")
+        let digits = number.filter(\.isWholeNumber)
+        let sanitized = (hasPlus ? "+" : "") + digits
+        if let url = URL(string: "tel:\(sanitized)") {
             UIApplication.shared.open(url)
         }
     }

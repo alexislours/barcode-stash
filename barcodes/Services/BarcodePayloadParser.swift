@@ -196,8 +196,8 @@ enum BarcodePayloadParser {
         let parts = rest.components(separatedBy: "?")
         let coords = parts[0].components(separatedBy: ",")
         guard coords.count >= 2,
-              let lat = Double(coords[0]),
-              let lon = Double(coords[1]) else { return nil }
+              let lat = Double(coords[0].trimmingCharacters(in: .whitespaces)),
+              let lon = Double(coords[1].trimmingCharacters(in: .whitespaces)) else { return nil }
         var label: String?
         if parts.count > 1 {
             let params = URLComponents(string: "?\(parts[1])")?.queryItems ?? []

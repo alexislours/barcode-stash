@@ -45,6 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scanner now shows a "Camera Access Required" screen with an "Open Settings" button when camera permission is denied or restricted, instead of a blank view
 - Camera permission status is re-checked when the app returns to the foreground, so granting access in Settings immediately updates the scanner
 - `--screenshots` in-memory store flag is now compiled out of release builds via `#if DEBUG`
+- `extractVEventBlock` no longer uses cross-string indices from an `uppercased()` copy; uses `.caseInsensitive` search on the original string directly, fixing potential corruption with non-ASCII characters
+- vCard and iCal parsing now unfolds RFC 5545 / RFC 6350 continuation lines before splitting, so multi-line properties are read correctly
+- Geo URI parser trims whitespace around latitude/longitude values before parsing
+- `openPhone` sanitizes phone numbers by stripping non-digit characters (preserving leading `+`) to prevent malformed `tel:` URLs
 
 ### Changed
 
