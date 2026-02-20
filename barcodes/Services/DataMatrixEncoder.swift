@@ -47,7 +47,7 @@ enum DataMatrixEncoder {
 
         // Try CIDataMatrixCodeDescriptor for pixel-perfect rendering
         if let descriptor = CIDataMatrixCodeDescriptor(
-            payload: Data(allCodewords),
+            payload: Data(padded),
             rowCount: symbol.symbolHeight,
             columnCount: symbol.symbolWidth,
             eccVersion: .v200
