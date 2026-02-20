@@ -40,6 +40,7 @@ struct BarcodeScannerRepresentable: UIViewControllerRepresentable {
 
         if context.coordinator.lastRestartCount != restartCount {
             context.coordinator.lastRestartCount = restartCount
+            viewController.clearScannedKeys()
             viewController.startRunning()
         }
     }
