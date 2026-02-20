@@ -69,8 +69,23 @@ enum BarcodeValidator {
                 )
             )
         }
-        // Check digit is from the expanded UPC-A form - can't validate without expansion logic
-        return validResult()
+        let upcA = expandUPCEtoUPCA(digits)
+        return checkDigitResult(digits: upcA)
+    }
+
+    private static func expandUPCEtoUPCA(_ digits: String) -> String {
+        let nums = digits.compactMap(\.wholeNumberValue)
+        let expanded: [Int] = switch nums[6] {
+        case 0, 1, 2:
+            [nums[0], nums[1], nums[2], nums[6], 0, 0, 0, 0, nums[3], nums[4], nums[5], nums[7]]
+        case 3:
+            [nums[0], nums[1], nums[2], nums[3], 0, 0, 0, 0, 0, nums[4], nums[5], nums[7]]
+        case 4:
+            [nums[0], nums[1], nums[2], nums[3], nums[4], 0, 0, 0, 0, 0, nums[5], nums[7]]
+        default:
+            [nums[0], nums[1], nums[2], nums[3], nums[4], nums[5], 0, 0, 0, 0, nums[6], nums[7]]
+        }
+        return expanded.map(String.init).joined()
     }
 
     private static func validateCode39Or93(_ input: String) -> ValidationResult {
