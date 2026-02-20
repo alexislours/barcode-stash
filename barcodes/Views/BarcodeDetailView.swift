@@ -325,9 +325,10 @@ extension BarcodeDetailView {
 
     @ViewBuilder
     var descriptorDataSection: some View {
-        if showAdvancedData, let rows = descriptorRows() ?? generatorOptionsRows() {
+        let descriptorResult = descriptorRows()
+        if showAdvancedData, let rows = descriptorResult ?? generatorOptionsRows() {
             advancedDataCard(
-                title: descriptorRows() != nil
+                title: descriptorResult != nil
                     ? String(localized: "Descriptor Data", comment: "Detail: descriptor data section title")
                     : String(localized: "Generator Options", comment: "Detail: generator options section title"),
                 rows: rows

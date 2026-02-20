@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `descriptorDataSection` no longer calls `descriptorRows()` twice per view evaluation, eliminating redundant `NSKeyedUnarchiver` deserialization
 - Share sheet barcode image is now cached in `@State` and generated once in `.task` instead of regenerating
 - Barcode preview in detail view now uses `Button` instead of `.onTapGesture`, adding proper VoiceOver button trait, hardware keyboard, and Switch Control support
 - Disk cache now enforces a 100 MB size cap with LRU eviction, deleting oldest files when the limit is exceeded
