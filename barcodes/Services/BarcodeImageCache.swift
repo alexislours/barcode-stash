@@ -6,11 +6,13 @@ final class BarcodeImageCache: Sendable {
 
     private nonisolated(unsafe) let cache: NSCache<NSString, UIImage>
     private let diskCacheURL: URL
+    private let diskCacheSizeLimit: Int
 
-    private init() {
+    private init(diskCacheSizeLimit: Int = 100 * 1024 * 1024) {
         cache = NSCache()
         cache.countLimit = 200
         cache.totalCostLimit = 50 * 1024 * 1024 // 50 MB
+        self.diskCacheSizeLimit = diskCacheSizeLimit
 
         let caches =
             (try? FileManager.default.url(
@@ -80,6 +82,51 @@ final class BarcodeImageCache: Sendable {
         let url = diskURL(for: key)
         if let pngData = image.pngData() {
             try? pngData.write(to: url, options: .atomic)
+        }
+
+        evictDiskCacheIfNeeded()
+    }
+
+    // MARK: - Disk Cache Eviction
+
+    private struct CachedFileInfo {
+        let url: URL
+        let size: Int
+        let modified: Date
+    }
+
+    private nonisolated func evictDiskCacheIfNeeded() {
+        let fileManager = FileManager.default
+        let resourceKeys: Set<URLResourceKey> = [.contentModificationDateKey, .fileSizeKey]
+
+        guard let files = try? fileManager.contentsOfDirectory(
+            at: diskCacheURL,
+            includingPropertiesForKeys: Array(resourceKeys)
+        ) else { return }
+
+        var totalSize = 0
+        var fileInfos: [CachedFileInfo] = []
+
+        for file in files {
+            guard let values = try? file.resourceValues(forKeys: resourceKeys),
+                  let size = values.fileSize,
+                  let modified = values.contentModificationDate
+            else { continue }
+            totalSize += size
+            fileInfos.append(CachedFileInfo(url: file, size: size, modified: modified))
+        }
+
+        guard totalSize > diskCacheSizeLimit else { return }
+
+        // Sort oldest first for LRU eviction
+        fileInfos.sort { $0.modified < $1.modified }
+
+        for info in fileInfos {
+            try? fileManager.removeItem(at: info.url)
+            totalSize -= info.size
+            if totalSize <= diskCacheSizeLimit {
+                break
+            }
         }
     }
 
