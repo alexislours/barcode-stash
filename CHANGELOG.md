@@ -71,6 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `lastModified` in notes field now updates on focus loss or submit instead of every keystroke
 - Share extension stale file cleanup no longer blocks the main thread
 - `batchDelete()` and `batchTag()` now explicitly save the model context after mutations, preventing deleted barcodes from reappearing or tag changes from being lost if the app terminates before autosave
+- Share extension `cleanupStaleFiles` no longer captures `self` in a detached task
 
 ### Changed
 

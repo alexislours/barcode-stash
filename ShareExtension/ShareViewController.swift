@@ -76,8 +76,8 @@ class ShareViewController: UIViewController {
 
         let sharedDir = containerURL.appendingPathComponent("SharedImages", isDirectory: true)
 
-        Task.detached { [self] in
-            cleanupStaleFiles(in: sharedDir)
+        Task.detached {
+            Self.cleanupStaleFiles(in: sharedDir)
         }
 
         overlayView.isHidden = false
@@ -135,7 +135,7 @@ class ShareViewController: UIViewController {
         }
     }
 
-    private nonisolated func cleanupStaleFiles(in directory: URL) {
+    private nonisolated static func cleanupStaleFiles(in directory: URL) {
         let fileManager = FileManager.default
         try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
         guard let files = try? fileManager.contentsOfDirectory(
