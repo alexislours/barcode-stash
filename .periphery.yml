@@ -1,0 +1,6 @@
+project: barcodes.xcodeproj
+schemes:
+- ShareExtension
+- barcodes
+report_exclude:
+- "*/SnapshotHelper.swift"

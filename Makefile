@@ -1,4 +1,4 @@
-.PHONY: lint lint-fix format format-check build test test-ci
+.PHONY: lint lint-fix format format-check build test test-ci periphery
 
 lint:
 	swiftlint lint barcodes/ ShareExtension/
@@ -29,3 +29,6 @@ test-ci:
 	xcodebuild test -project barcodes.xcodeproj -scheme barcodes \
 		-destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
 		-only-testing:barcodesTests 2>&1 | xcbeautify --renderer github-actions
+
+periphery:
+	periphery scan

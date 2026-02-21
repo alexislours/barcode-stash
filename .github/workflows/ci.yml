@@ -21,6 +21,18 @@ jobs:
       - name: SwiftFormat check
         run: make format-check
 
+  periphery:
+    needs: lint
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Periphery
+        run: brew install periphery
+
+      - name: Scan for unused code
+        run: make periphery
+
   test:
     needs: lint
     runs-on: macos-26

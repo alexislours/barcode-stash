@@ -65,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Added Periphery dead code scanning to CI pipeline and Makefile (`make periphery`)
 - `DataMatrixEncoder`: replaced `[any ModeEncoder]` existential array with `AnyModeEncoder` enum for static dispatch; removed `ModeEncoder` protocol
 - `DataMatrixEncoder`: removed unnecessary `throws` from `ModeEncoder.encode()` protocol and all 6 implementations; added typed `throws(EncodingError)` to `encodeHighLevel` and `EncoderContext.init`
 - Release build: enabled `DEAD_CODE_STRIPPING` and `STRIP_SWIFT_SYMBOLS`; removed stale `NEW_SETTING`
