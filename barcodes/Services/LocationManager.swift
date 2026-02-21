@@ -26,9 +26,9 @@ final class LocationManager: NSObject {
 extension LocationManager: CLLocationManagerDelegate {
     nonisolated func locationManager(_: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let location = locations.last
-        Task { @MainActor in
-            self.lastLocation = location
-            self.locationUpdateCount += 1
+        Task { @MainActor [weak self] in
+            self?.lastLocation = location
+            self?.locationUpdateCount += 1
         }
     }
 
@@ -38,10 +38,10 @@ extension LocationManager: CLLocationManagerDelegate {
 
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus
-        Task { @MainActor in
-            self.authorizationStatus = status
+        Task { @MainActor [weak self] in
+            self?.authorizationStatus = status
             if status == .authorizedWhenInUse || status == .authorizedAlways {
-                self.requestLocation()
+                self?.requestLocation()
             }
         }
     }
