@@ -64,10 +64,10 @@ final class BarcodeScannerViewController: UIViewController {
         case .authorized:
             setupCamera()
         case .notDetermined:
-            AVCaptureDevice.requestAccess(for: .video) { granted in
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
                 if granted {
-                    DispatchQueue.main.async {
-                        self.setupCamera()
+                    Task { @MainActor [weak self] in
+                        self?.setupCamera()
                     }
                 }
             }
@@ -103,7 +103,7 @@ final class BarcodeScannerViewController: UIViewController {
             guard let self else { return }
             if !captureSession.isRunning {
                 captureSession.startRunning()
-                DispatchQueue.main.async { [weak self] in
+                Task { @MainActor [weak self] in
                     self?.applyTorch()
                 }
             }
@@ -288,9 +288,7 @@ final class BarcodeScannerViewController: UIViewController {
         previewLayer = layer
 
         let presets = computeZoomPresets(for: device)
-        DispatchQueue.main.async { [weak self] in
-            self?.onSetupComplete?(presets)
-        }
+        onSetupComplete?(presets)
     }
 
     private func computeZoomPresets(for device: AVCaptureDevice) -> [ZoomPreset] {
