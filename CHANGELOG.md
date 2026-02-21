@@ -58,6 +58,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved performance for swipe actions on barcode rows in `HistoryView`
 - Scanner now shows a "Camera Access Required" screen with an "Open Settings" button when camera permission is denied or restricted, instead of a blank view
 - Camera permission status is re-checked when the app returns to the foreground, so granting access in Settings immediately updates the scanner
+- Scanner close button now has a 44×44pt minimum tap target for accessibility compliance
+- Favorites toggle in history filter menu now uses `withAccessibleAnimation` to respect reduced motion preferences
+- Filter badge in history filter menu is now hidden from VoiceOver with `accessibilityHidden`
+- Tag remove button now has an accessibility label ("Remove \(tag)") for VoiceOver
 - `--screenshots` in-memory store flag is now compiled out of release builds via `#if DEBUG`
 - `extractVEventBlock` no longer uses cross-string indices from an `uppercased()` copy; uses `.caseInsensitive` search on the original string directly, fixing potential corruption with non-ASCII characters
 - vCard and iCal parsing now unfolds RFC 5545 / RFC 6350 continuation lines before splitting, so multi-line properties are read correctly

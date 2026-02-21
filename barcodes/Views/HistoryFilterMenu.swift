@@ -42,7 +42,14 @@ struct HistoryFilterMenu: View {
             }
 
             Section {
-                Toggle(isOn: $filterFavorites.animation()) {
+                Toggle(isOn: Binding(
+                    get: { filterFavorites },
+                    set: { newValue in
+                        withAccessibleAnimation {
+                            filterFavorites = newValue
+                        }
+                    }
+                )) {
                     Label("Favorites", systemImage: "star.fill")
                 }
             }
@@ -106,6 +113,7 @@ struct HistoryFilterMenu: View {
                         .frame(width: 16, height: 16)
                         .background(Color.accentColor, in: Circle())
                         .offset(x: 6, y: -6)
+                        .accessibilityHidden(true)
                 }
             }
             .padding(.trailing, 6)

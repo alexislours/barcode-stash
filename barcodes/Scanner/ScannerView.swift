@@ -77,6 +77,7 @@ struct ScannerView: View {
                         .frame(width: 36, height: 36)
                         .background(.ultraThinMaterial, in: Circle())
                 }
+                .frame(minWidth: 44, minHeight: 44)
                 Spacer()
             }
             .padding(.horizontal)
