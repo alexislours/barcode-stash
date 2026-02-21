@@ -43,17 +43,11 @@ struct MessageComposeView: UIViewControllerRepresentable {
 
 nonisolated class CalendarEditDelegate: NSObject, EKEventEditViewDelegate {
     nonisolated(unsafe) static var key: UInt8 = 0
-    private let controller: EKEventEditViewController
-
-    init(controller: EKEventEditViewController) {
-        self.controller = controller
-    }
 
     func eventEditViewController(
-        _: EKEventEditViewController,
+        _ controller: EKEventEditViewController,
         didCompleteWith _: EKEventEditViewAction
     ) {
-        let controller = controller
         Task { @MainActor in
             controller.dismiss(animated: true)
         }

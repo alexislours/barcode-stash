@@ -312,7 +312,7 @@ struct BarcodeActionView: View {
             let editController = EKEventEditViewController()
             editController.eventStore = store
             editController.event = event
-            let delegate = CalendarEditDelegate(controller: editController)
+            let delegate = CalendarEditDelegate()
             editController.editViewDelegate = delegate
             objc_setAssociatedObject(
                 editController, &CalendarEditDelegate.key, delegate, .OBJC_ASSOCIATION_RETAIN
