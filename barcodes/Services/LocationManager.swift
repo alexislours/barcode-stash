@@ -40,9 +40,6 @@ extension LocationManager: CLLocationManagerDelegate {
         let status = manager.authorizationStatus
         Task { @MainActor [weak self] in
             self?.authorizationStatus = status
-            if status == .authorizedWhenInUse || status == .authorizedAlways {
-                self?.requestLocation()
-            }
         }
     }
 }

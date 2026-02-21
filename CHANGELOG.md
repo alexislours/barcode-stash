@@ -77,6 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Share extension stale file cleanup no longer blocks the main thread
 - `batchDelete()` and `batchTag()` now explicitly save the model context after mutations, preventing deleted barcodes from reappearing or tag changes from being lost if the app terminates before autosave
 - Share extension `cleanupStaleFiles` no longer captures `self` in a detached task
+- `locationManagerDidChangeAuthorization` no longer auto-fires `requestLocation()` on every `LocationManager` init, eliminating a redundant GPS wake each time the scanner or detail view appears
 
 ### Changed
 
