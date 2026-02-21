@@ -2,11 +2,14 @@ import SwiftUI
 
 struct ContentView: View {
     @Binding var pendingSharedImageScan: Bool
+    var pendingQuickAction: QuickAction?
+    var consumeQuickAction: () -> Void = {}
     @State private var showScanner = false
     @State private var pendingBarcode: ScannedBarcode?
     @State private var selectedBarcode: ScannedBarcode?
     @State private var selectedTab = 0
     @State private var isSelectMode = false
+    @State private var filterFavorites = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -14,7 +17,8 @@ struct ContentView: View {
                 HistoryView(
                     selectedBarcode: $selectedBarcode,
                     isSelectMode: $isSelectMode,
-                    pendingSharedImageScan: $pendingSharedImageScan
+                    pendingSharedImageScan: $pendingSharedImageScan,
+                    filterFavorites: $filterFavorites
                 )
                 .overlay(alignment: .bottomTrailing) {
                     if !isSelectMode {
@@ -86,6 +90,21 @@ struct ContentView: View {
             if newTab == 0, let barcode = pendingBarcode {
                 selectedBarcode = barcode
                 pendingBarcode = nil
+            }
+        }
+        .onChange(of: pendingQuickAction) { _, action in
+            guard let action else { return }
+            consumeQuickAction()
+            showScanner = false
+            switch action {
+            case .scan:
+                selectedTab = 0
+                showScanner = true
+            case .generate:
+                selectedTab = 1
+            case .favorites:
+                selectedTab = 0
+                filterFavorites = true
             }
         }
     }

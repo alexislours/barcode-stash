@@ -8,10 +8,10 @@ struct HistoryView: View {
     @Binding var selectedBarcode: ScannedBarcode?
     @Binding var isSelectMode: Bool
     @Binding var pendingSharedImageScan: Bool
+    @Binding var filterFavorites: Bool
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var searchText = ""
     @State private var isSearchPresented = false
-    @State private var filterFavorites = false
     @State private var sourceFilter: HistorySourceFilter = .all
     @State private var selectedTag: String?
 

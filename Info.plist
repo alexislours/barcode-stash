@@ -13,6 +13,33 @@
 			</array>
 		</dict>
 	</array>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.alexislours.barcodes.scan</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Scan Barcode</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>barcode.viewfinder</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.alexislours.barcodes.generate</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Generate Barcode</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>wand.and.stars</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.alexislours.barcodes.favorites</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Show Favorites</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>star.fill</string>
+		</dict>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

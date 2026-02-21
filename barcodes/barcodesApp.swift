@@ -7,8 +7,10 @@ struct BarcodesApp: App {
         private let isScreenshotMode = ProcessInfo.processInfo.arguments.contains("--screenshots")
     #endif
 
+    @UIApplicationDelegateAdaptor(QuickActionDelegate.self) var quickActionDelegate
     @Environment(\.scenePhase) private var scenePhase
     @State private var pendingSharedImageScan = false
+    @State private var pendingQuickAction: QuickAction?
     @State private var modelContainer: ModelContainer?
     @State private var containerErrorMessage: String?
 
@@ -61,6 +63,13 @@ struct BarcodesApp: App {
         return !contents.isEmpty
     }
 
+    private func consumeQuickAction() {
+        if let action = quickActionDelegate.pendingAction {
+            quickActionDelegate.pendingAction = nil
+            pendingQuickAction = action
+        }
+    }
+
     private func retryContainerCreation() {
         switch Self.makeModelContainer() {
         case let .success(container):
@@ -98,19 +107,36 @@ struct BarcodesApp: App {
     var body: some Scene {
         WindowGroup {
             if let modelContainer {
-                ContentView(pendingSharedImageScan: $pendingSharedImageScan)
-                    .onOpenURL { url in
-                        if url.scheme == "barcode-stash", url.host() == "scan-shared-images" {
+                ContentView(
+                    pendingSharedImageScan: $pendingSharedImageScan,
+                    pendingQuickAction: pendingQuickAction,
+                    consumeQuickAction: { pendingQuickAction = nil }
+                )
+                .onOpenURL { url in
+                    guard url.scheme == "barcode-stash" else { return }
+                    switch url.host() {
+                    case "scan-shared-images":
+                        pendingSharedImageScan = true
+                    case "scan":
+                        pendingQuickAction = .scan
+                    case "generate":
+                        pendingQuickAction = .generate
+                    case "favorites":
+                        pendingQuickAction = .favorites
+                    default:
+                        break
+                    }
+                }
+                .onChange(of: scenePhase) {
+                    if scenePhase == .active {
+                        consumeQuickAction()
+                        if hasSharedImages() {
                             pendingSharedImageScan = true
                         }
                     }
-                    .onChange(of: scenePhase) {
-                        if scenePhase == .active, hasSharedImages() {
-                            pendingSharedImageScan = true
-                        }
-                    }
+                }
                 #if DEBUG
-                    .task {
+                .task {
                         if isScreenshotMode {
                             MockDataSeeder.seed(into: modelContainer.mainContext)
                         }
