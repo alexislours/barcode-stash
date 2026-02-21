@@ -8,6 +8,7 @@ enum ReverseGeocoder {
     }
 
     private static var cache: [String: CacheEntry] = [:]
+    private static var inFlightRequests: [String: Task<String?, Never>] = [:]
 
     private static func cacheKey(latitude: Double, longitude: Double) -> String {
         let lat = (latitude * 1000).rounded() / 1000
@@ -29,7 +30,17 @@ enum ReverseGeocoder {
             }
         }
 
-        let result = await Self.fetchAddress(latitude: latitude, longitude: longitude)
+        // Coalesce concurrent requests for the same location
+        if let existingTask = inFlightRequests[key] {
+            return await existingTask.value
+        }
+
+        let task = Task<String?, Never> {
+            await Self.fetchAddress(latitude: latitude, longitude: longitude)
+        }
+        inFlightRequests[key] = task
+        let result = await task.value
+        inFlightRequests[key] = nil
         cache[key] = CacheEntry(address: result, timestamp: .now)
         return result
     }
