@@ -142,7 +142,9 @@ struct SettingsView: View {
 
     private func deleteAllBarcodes() {
         do {
-            try modelContext.delete(model: ScannedBarcode.self)
+            for barcode in barcodes {
+                modelContext.delete(barcode)
+            }
             try modelContext.save()
             BarcodeImageCache.shared.removeAll()
             ReverseGeocoder.clearCache()
