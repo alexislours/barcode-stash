@@ -160,11 +160,14 @@ struct ImageScanResultsView: View {
             )
             modelContext.insert(barcode)
             if let lat = detected.latitude, let lon = detected.longitude {
+                let barcodeID = barcode.persistentModelID
                 Task {
-                    barcode.address = await ReverseGeocoder.reverseGeocode(
+                    let address = await ReverseGeocoder.reverseGeocode(
                         latitude: lat,
                         longitude: lon
                     )
+                    guard let existing = modelContext.model(for: barcodeID) as? ScannedBarcode else { return }
+                    existing.address = address
                 }
             }
         }

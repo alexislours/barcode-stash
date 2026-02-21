@@ -1,10 +1,12 @@
 import CoreImage
 import CoreLocation
 import MapKit
+import SwiftData
 import SwiftUI
 import UIKit
 
 struct BarcodeDetailView: View {
+    @Environment(\.modelContext) private var modelContext
     @Bindable var barcode: ScannedBarcode
     @State private var descriptionText: String = ""
     @State private var showFullscreen = false
@@ -256,11 +258,14 @@ struct BarcodeDetailView: View {
             guard isCapturingLocation, let location = locationManager.lastLocation else { return }
             barcode.latitude = location.coordinate.latitude
             barcode.longitude = location.coordinate.longitude
+            let barcodeID = barcode.persistentModelID
             Task {
-                barcode.address = await ReverseGeocoder.reverseGeocode(
+                let address = await ReverseGeocoder.reverseGeocode(
                     latitude: location.coordinate.latitude,
                     longitude: location.coordinate.longitude
                 )
+                guard let existing = modelContext.model(for: barcodeID) as? ScannedBarcode else { return }
+                existing.address = address
             }
             withAccessibleAnimation {
                 isCapturingLocation = false
@@ -269,7 +274,10 @@ struct BarcodeDetailView: View {
         }
         .task {
             if barcode.address == nil, let lat = barcode.latitude, let lon = barcode.longitude {
-                barcode.address = await ReverseGeocoder.reverseGeocode(latitude: lat, longitude: lon)
+                let barcodeID = barcode.persistentModelID
+                let address = await ReverseGeocoder.reverseGeocode(latitude: lat, longitude: lon)
+                guard let existing = modelContext.model(for: barcodeID) as? ScannedBarcode else { return }
+                existing.address = address
             }
         }
     }
@@ -296,11 +304,6 @@ extension BarcodeDetailView {
                     commitTag()
                 }
             }
-    }
-
-    struct DescriptorRow {
-        let label: String
-        let value: String
     }
 
     func commitNotes() {

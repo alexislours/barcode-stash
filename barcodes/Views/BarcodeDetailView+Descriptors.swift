@@ -4,6 +4,11 @@ import Foundation
 // MARK: - Descriptor Data Rows
 
 extension BarcodeDetailView {
+    struct DescriptorRow {
+        let label: String
+        let value: String
+    }
+
     func descriptorRows() -> [DescriptorRow]? {
         guard let data = barcode.descriptorArchive else { return nil }
 
