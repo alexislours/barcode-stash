@@ -34,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- SwiftData model is re-fetched after `await` before deletion to prevent crashes when the model is invalidated during an async gap
+- File timestamp API usage declared in main app Privacy Manifest (`NSPrivacyAccessedAPICategoryFileTimestamp`)
+- Development team set correctly at the project level in build settings
 - `descriptorDataSection` no longer calls `descriptorRows()` twice per view evaluation, eliminating redundant `NSKeyedUnarchiver` deserialization
 - Share sheet barcode image is now cached in `@State` and generated once in `.task` instead of regenerating
 - Barcode preview in detail view now uses `Button` instead of `.onTapGesture`, adding proper VoiceOver button trait, hardware keyboard, and Switch Control support
@@ -65,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Added Privacy Manifest to Share Extension declaring file timestamp API usage
 - Added Periphery dead code scanning to CI pipeline and Makefile (`make periphery`)
 - `DataMatrixEncoder`: replaced `[any ModeEncoder]` existential array with `AnyModeEncoder` enum for static dispatch; removed `ModeEncoder` protocol
 - `DataMatrixEncoder`: removed unnecessary `throws` from `ModeEncoder.encode()` protocol and all 6 implementations; added typed `throws(EncodingError)` to `encodeHighLevel` and `EncoderContext.init`
@@ -84,6 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Wi-Fi network join action (`NEHotspotConfiguration` requires an entitlement unavailable to most apps)
+- Debug `print()` calls from app entry point
 - Unused `encodingMode` properties on `DataMatrixEncoder` sub-encoders and `AnyModeEncoder.encodingMode` computed property
 - Unused `macro05`/`macro06` constants and `SymbolInfo.dataLengthForBlock(_:)` method from `DataMatrixEncoder`
 - Unused `deleteBarcodes(at:from:)` method from `HistoryView` batch operations
