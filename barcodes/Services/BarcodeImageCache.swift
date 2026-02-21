@@ -7,6 +7,8 @@ final class BarcodeImageCache: Sendable {
     private nonisolated(unsafe) let cache: NSCache<NSString, UIImage>
     private let diskCacheURL: URL
     private let diskCacheSizeLimit: Int
+    private nonisolated(unsafe) var lastEvictionCheck: Date = .distantPast
+    private let evictionCheckInterval: TimeInterval = 30
 
     private init(diskCacheSizeLimit: Int = 100 * 1024 * 1024) {
         cache = NSCache()
@@ -96,6 +98,10 @@ final class BarcodeImageCache: Sendable {
     }
 
     private nonisolated func evictDiskCacheIfNeeded() {
+        let now = Date()
+        guard now.timeIntervalSince(lastEvictionCheck) >= evictionCheckInterval else { return }
+        lastEvictionCheck = now
+
         let fileManager = FileManager.default
         let resourceKeys: Set<URLResourceKey> = [.contentModificationDateKey, .fileSizeKey]
 
