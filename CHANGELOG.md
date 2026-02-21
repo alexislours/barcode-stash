@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `metadataOutput` is now captured locally before dispatching to `sessionQueue`, removing the `nonisolated(unsafe)` escape hatch in `BarcodeScannerViewController`
 - `CalendarEditDelegate` no longer stores a strong reference to `EKEventEditViewController`, breaking a retain cycle caused by the associated-object back-reference
 - SwiftData model is re-fetched after `await` before deletion to prevent crashes when the model is invalidated during an async gap
 - File timestamp API usage declared in main app Privacy Manifest (`NSPrivacyAccessedAPICategoryFileTimestamp`)

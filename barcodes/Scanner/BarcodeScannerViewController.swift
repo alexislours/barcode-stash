@@ -1,4 +1,4 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import CoreImage
 import UIKit
 
@@ -22,7 +22,7 @@ final class BarcodeScannerViewController: UIViewController {
     private nonisolated(unsafe) let captureSession = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "barcode.scanner.session")
     private var previewLayer: AVCaptureVideoPreviewLayer?
-    private nonisolated(unsafe) var metadataOutput: AVCaptureMetadataOutput?
+    private var metadataOutput: AVCaptureMetadataOutput?
     private var videoDevice: AVCaptureDevice?
     private var lastZoomFactor: CGFloat = 1.0
     private var desiredTorchOn = false
@@ -147,9 +147,9 @@ final class BarcodeScannerViewController: UIViewController {
 
     func updateAllowedTypes(_ types: [AVMetadataObject.ObjectType]) {
         allowedTypes = types
-        sessionQueue.async { [weak self] in
-            guard let output = self?.metadataOutput else { return }
-            output.metadataObjectTypes = types
+        let output = metadataOutput
+        sessionQueue.async {
+            output?.metadataObjectTypes = types
         }
     }
 
