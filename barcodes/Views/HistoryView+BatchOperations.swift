@@ -186,14 +186,6 @@ extension HistoryView {
 
     // MARK: - Actions
 
-    func deleteBarcodes(at offsets: IndexSet, from source: [ScannedBarcode]) {
-        UINotificationFeedbackGenerator().notificationOccurred(.warning)
-        let toDelete = offsets.map { source[$0] }
-        for barcode in toDelete {
-            modelContext.delete(barcode)
-        }
-    }
-
     func batchDelete() {
         UINotificationFeedbackGenerator().notificationOccurred(.warning)
         for barcode in selectedBarcodes {

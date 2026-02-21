@@ -6,8 +6,6 @@ extension DataMatrixEncoder {
     // MARK: - X12 Encoder
 
     struct X12Encoder {
-        let encodingMode = EncodingMode.x12
-
         func encode(_ ctx: EncoderContext) {
             var buffer: [UInt8] = []
             while ctx.hasMoreCharacters {
@@ -67,8 +65,6 @@ extension DataMatrixEncoder {
     // MARK: - EDIFACT Encoder
 
     struct EdifactEncoder {
-        let encodingMode = EncodingMode.edifact
-
         func encode(_ ctx: EncoderContext) {
             var buffer: [UInt8] = []
             while ctx.hasMoreCharacters {
@@ -188,8 +184,6 @@ extension DataMatrixEncoder {
     // MARK: - Base256 Encoder
 
     struct Base256Encoder {
-        let encodingMode = EncodingMode.base256
-
         func encode(_ ctx: EncoderContext) {
             var buffer: [UInt8] = [0] // length placeholder
             while ctx.hasMoreCharacters {

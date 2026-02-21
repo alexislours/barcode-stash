@@ -83,6 +83,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Wi-Fi network join action (`NEHotspotConfiguration` requires an entitlement unavailable to most apps)
+- Unused `encodingMode` properties on `DataMatrixEncoder` sub-encoders and `AnyModeEncoder.encodingMode` computed property
+- Unused `macro05`/`macro06` constants and `SymbolInfo.dataLengthForBlock(_:)` method from `DataMatrixEncoder`
+- Unused `deleteBarcodes(at:from:)` method from `HistoryView` batch operations
 
 ## [1.0.0] (2026021701) - 2026-02-17
 

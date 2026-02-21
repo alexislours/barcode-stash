@@ -76,11 +76,6 @@ extension DataMatrixEncoder {
             return dataCapacity / rsBlockData
         }
 
-        func dataLengthForBlock(_ index: Int) -> Int {
-            if isSpecial144 { return index <= 8 ? 156 : 155 }
-            return rsBlockData
-        }
-
         func errorLengthForBlock(_: Int) -> Int {
             rsBlockError
         }

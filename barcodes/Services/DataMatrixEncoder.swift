@@ -73,8 +73,6 @@ enum DataMatrixEncoder {
     static let latchToC40: UInt8 = 230
     static let latchToBase256: UInt8 = 231
     static let upperShift: UInt8 = 235
-    static let macro05: UInt8 = 236
-    static let macro06: UInt8 = 237
     static let latchToX12: UInt8 = 238
     static let latchToText: UInt8 = 239
     static let latchToEdifact: UInt8 = 240
@@ -90,17 +88,6 @@ enum DataMatrixEncoder {
         case x12(X12Encoder)
         case edifact(EdifactEncoder)
         case base256(Base256Encoder)
-
-        var encodingMode: EncodingMode {
-            switch self {
-            case let .ascii(encoder): encoder.encodingMode
-            case let .c40(encoder): encoder.encodingMode
-            case let .text(encoder): encoder.encodingMode
-            case let .x12(encoder): encoder.encodingMode
-            case let .edifact(encoder): encoder.encodingMode
-            case let .base256(encoder): encoder.encodingMode
-            }
-        }
 
         func encode(_ ctx: EncoderContext) {
             switch self {
