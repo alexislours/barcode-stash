@@ -204,7 +204,6 @@ struct ScannerView: View {
     private func resetScannerState() {
         if !isScreenshotMode {
             locationManager.requestPermission()
-            locationManager.requestLocation()
         }
         barcodeBounds = nil
         showScanResult = false
