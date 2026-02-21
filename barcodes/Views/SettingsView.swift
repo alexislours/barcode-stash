@@ -168,41 +168,60 @@ struct SettingsView: View {
             )
             return
         }
-        defer { url.stopAccessingSecurityScopedResource() }
 
+        // Read data while security-scoped resource is active (must stay on calling context)
+        let data: Data
         do {
-            let data = try Data(contentsOf: url)
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
-            let imported = try decoder.decode([ExportableBarcode].self, from: data)
-
-            var added = 0
-            for item in imported {
-                if let barcode = item.toScannedBarcode() {
-                    let isDuplicate = barcodes.contains { existing in
-                        existing.rawValue == barcode.rawValue
-                            && existing.type == barcode.type
-                            && abs(existing.timestamp.timeIntervalSince(barcode.timestamp)) < 1.0
-                    }
-                    if !isDuplicate {
-                        modelContext.insert(barcode)
-                        added += 1
-                    }
-                }
-            }
-
-            try modelContext.save()
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-            let skipped = imported.count - added
-            showResult(
-                title: String(localized: "Import Successful"),
-                message: String(localized: "Added \(added) new barcodes. \(skipped) duplicates skipped.")
-            )
+            data = try Data(contentsOf: url)
         } catch {
+            url.stopAccessingSecurityScopedResource()
             showResult(
                 title: String(localized: "Import Failed", comment: "Alert title when barcode import fails"),
                 message: error.localizedDescription
             )
+            return
+        }
+        url.stopAccessingSecurityScopedResource()
+
+        Task {
+            do {
+                let imported = try await Task.detached {
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .iso8601
+                    return try decoder.decode([ExportableBarcode].self, from: data)
+                }.value
+
+                let existingKeys = Set(
+                    barcodes.map {
+                        "\($0.rawValue)|\($0.type.rawValue)|\(Int($0.timestamp.timeIntervalSince1970))"
+                    }
+                )
+
+                var added = 0
+                for item in imported {
+                    if let barcode = item.toScannedBarcode() {
+                        let key =
+                            "\(barcode.rawValue)|\(barcode.type.rawValue)|\(Int(barcode.timestamp.timeIntervalSince1970))"
+                        if !existingKeys.contains(key) {
+                            modelContext.insert(barcode)
+                            added += 1
+                        }
+                    }
+                }
+
+                try modelContext.save()
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                let skipped = imported.count - added
+                showResult(
+                    title: String(localized: "Import Successful"),
+                    message: String(localized: "Added \(added) new barcodes. \(skipped) duplicates skipped.")
+                )
+            } catch {
+                showResult(
+                    title: String(localized: "Import Failed", comment: "Alert title when barcode import fails"),
+                    message: error.localizedDescription
+                )
+            }
         }
     }
 

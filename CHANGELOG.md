@@ -81,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `locationManagerDidChangeAuthorization` no longer auto-fires `requestLocation()` on every `LocationManager` init, eliminating a redundant GPS wake each time the scanner or detail view appears
 - `ReverseGeocoder.reverseGeocode` now coalesces concurrent requests for the same location, preventing duplicate network calls when MainActor reentrancy allows multiple callers past the cache check
 - Disk cache eviction no longer enumerates the entire cache directory on every write; throttled to at most once per 30 seconds
+- `importBarcodes` now decodes JSON off the main thread and uses Set-based O(n+m) duplicate detection instead of O(n*m) nested loop
 
 ### Changed
 
