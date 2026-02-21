@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Home Screen quick actions (long-press app icon) for Scan, Create, and Favorites via `UIApplicationShortcutItem` with deep link routing through `barcode-stash://` URL scheme
 - Scan barcodes from photo library images via `PhotosPicker` in `HistoryView`
 - `ImageBarcodeScanner` service using `VNDetectBarcodesRequest` to detect all 11 supported symbologies from `CGImage` input
 - `BarcodeType.init?(symbology:)` initializer mapping `VNBarcodeSymbology` to `BarcodeType`
