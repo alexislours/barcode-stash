@@ -191,6 +191,7 @@ extension HistoryView {
         for barcode in selectedBarcodes {
             modelContext.delete(barcode)
         }
+        try? modelContext.save()
         finishBatchAction()
     }
 
@@ -219,6 +220,7 @@ extension HistoryView {
                 barcode.lastModified = .now
             }
         }
+        try? modelContext.save()
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         finishBatchAction()
     }
