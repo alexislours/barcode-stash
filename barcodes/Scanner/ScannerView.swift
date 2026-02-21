@@ -274,6 +274,7 @@ struct ScannerView: View {
             return
         }
 
+        locationManager.requestLocation()
         let barcode = saveBarcode(value: value, type: type, descriptorArchive: descriptorArchive)
         lastBulkBarcode = barcode
         bulkSavedCount += 1
