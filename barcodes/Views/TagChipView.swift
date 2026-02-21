@@ -34,7 +34,7 @@ struct TagChipView: View {
                         .foregroundStyle(chipColor.opacity(0.7))
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Remove \(tag)")
+                .accessibilityLabel(String(localized: "Remove \(tag)", comment: "Tag chip: remove tag button"))
             }
         }
         .padding(.horizontal, 10)
