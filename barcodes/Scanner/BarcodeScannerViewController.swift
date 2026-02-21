@@ -288,7 +288,9 @@ final class BarcodeScannerViewController: UIViewController {
         previewLayer = layer
 
         let presets = computeZoomPresets(for: device)
-        onSetupComplete?(presets)
+        Task { [weak self] in
+            self?.onSetupComplete?(presets)
+        }
     }
 
     private func computeZoomPresets(for device: AVCaptureDevice) -> [ZoomPreset] {
