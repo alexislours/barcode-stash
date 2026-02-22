@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Share image rendering in `ShareBarcodeSheet` moved from synchronous inline call to `@State` with `.task(id:)`, eliminating main-thread jank on every toggle flip
 - Defer `onSetupComplete` callback in `BarcodeScannerViewController` to avoid modifying SwiftUI state during view update
 - `LocationManager` delegate callbacks now use `[weak self]` in MainActor Tasks, fixing non-Sendable `self` capture across isolation boundaries
 - Replace `DispatchQueue.main.async` with `Task { @MainActor in }` in `BarcodeScannerViewController` for Swift 6 strict concurrency compliance and add `[weak self]` to camera permission callback

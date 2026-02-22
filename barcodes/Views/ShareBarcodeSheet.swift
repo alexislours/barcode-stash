@@ -13,6 +13,7 @@ struct ShareBarcodeSheet: View {
     @AppStorage("shareShowAddress") private var showAddress = true
     @State private var barcodeImage: UIImage?
     @State private var mapSnapshot: UIImage?
+    @State private var shareImage: Image?
     @AppStorage("mapStyle") private var mapStyle: MapStyleOption = .standard
 
     enum ShareMode: String, CaseIterable {
@@ -28,8 +29,6 @@ struct ShareBarcodeSheet: View {
     }
 
     var body: some View {
-        let shareImage = renderShareImage(barcodeImage: barcodeImage)
-
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
@@ -58,13 +57,17 @@ struct ShareBarcodeSheet: View {
                     }
 
                     ShareLink(
-                        item: shareImage,
-                        preview: SharePreview(barcode.rawValue, image: shareImage)
+                        item: shareImage ?? Image(systemName: "barcode"),
+                        preview: SharePreview(
+                            barcode.rawValue,
+                            image: shareImage ?? Image(systemName: "barcode")
+                        )
                     ) {
                         Label("Share", systemImage: "square.and.arrow.up")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .disabled(shareImage == nil)
                     .padding(.horizontal)
                 }
                 .padding(.vertical)
@@ -83,6 +86,9 @@ struct ShareBarcodeSheet: View {
                     size: CGSize(width: 300, height: 300)
                 )
                 await loadMapSnapshot()
+            }
+            .task(id: shareRenderKey) {
+                shareImage = renderShareImage(barcodeImage: barcodeImage)
             }
         }
     }
@@ -186,6 +192,34 @@ struct ShareBarcodeSheet: View {
                 height: barcodeImage.size.height
             ))
         }
+    }
+
+    // MARK: - Share Render Key
+
+    private var shareRenderKey: ShareRenderKey {
+        ShareRenderKey(
+            mode: mode,
+            showType: showType,
+            showRawValue: showRawValue,
+            showDescription: showDescription,
+            showDate: showDate,
+            showMap: showMap,
+            showAddress: showAddress,
+            hasBarcodeImage: barcodeImage != nil,
+            hasMapSnapshot: mapSnapshot != nil
+        )
+    }
+
+    private struct ShareRenderKey: Hashable {
+        let mode: ShareMode
+        let showType: Bool
+        let showRawValue: Bool
+        let showDescription: Bool
+        let showDate: Bool
+        let showMap: Bool
+        let showAddress: Bool
+        let hasBarcodeImage: Bool
+        let hasMapSnapshot: Bool
     }
 
     // MARK: - Map Snapshot
