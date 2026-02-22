@@ -336,22 +336,30 @@ struct HistoryView: View {
         isImageScanning = true
         defer { isImageScanning = false }
 
-        var allDetected: [DetectedBarcode] = []
-        var seen = Set<String>()
-
-        for item in items {
-            guard let data = try? await item.loadTransferable(type: Data.self) else { continue }
-
-            let detected = await (try? Task.detached {
-                try ImageBarcodeScanner.detectBarcodes(from: data)
-            }.value) ?? []
-
-            for barcode in detected {
-                let key = "\(barcode.type.rawValue)|\(barcode.rawValue)"
-                if seen.insert(key).inserted {
-                    allDetected.append(barcode)
+        let allDetected = await withTaskGroup(
+            of: [DetectedBarcode].self,
+            returning: [DetectedBarcode].self
+        ) { group in
+            for item in items {
+                group.addTask {
+                    guard let data = try? await item.loadTransferable(type: Data.self) else {
+                        return []
+                    }
+                    return (try? ImageBarcodeScanner.detectBarcodes(from: data)) ?? []
                 }
             }
+
+            var results: [DetectedBarcode] = []
+            var seen = Set<String>()
+            for await detected in group {
+                for barcode in detected {
+                    let key = "\(barcode.type.rawValue)|\(barcode.rawValue)"
+                    if seen.insert(key).inserted {
+                        results.append(barcode)
+                    }
+                }
+            }
+            return results
         }
 
         presentScanResults(allDetected)
@@ -372,27 +380,33 @@ struct HistoryView: View {
         isImageScanning = true
         defer { isImageScanning = false }
 
-        var allDetected: [DetectedBarcode] = []
-        var seen = Set<String>()
-
-        for fileURL in files {
-            guard let data = try? Data(contentsOf: fileURL) else {
-                try? FileManager.default.removeItem(at: fileURL)
-                continue
-            }
-
-            let detected = await (try? Task.detached {
-                try ImageBarcodeScanner.detectBarcodes(from: data)
-            }.value) ?? []
-
-            for barcode in detected {
-                let key = "\(barcode.type.rawValue)|\(barcode.rawValue)"
-                if seen.insert(key).inserted {
-                    allDetected.append(barcode)
+        let allDetected = await withTaskGroup(
+            of: [DetectedBarcode].self,
+            returning: [DetectedBarcode].self
+        ) { group in
+            for fileURL in files {
+                group.addTask {
+                    guard let data = try? Data(contentsOf: fileURL) else {
+                        try? FileManager.default.removeItem(at: fileURL)
+                        return []
+                    }
+                    let detected = (try? ImageBarcodeScanner.detectBarcodes(from: data)) ?? []
+                    try? FileManager.default.removeItem(at: fileURL)
+                    return detected
                 }
             }
 
-            try? FileManager.default.removeItem(at: fileURL)
+            var results: [DetectedBarcode] = []
+            var seen = Set<String>()
+            for await detected in group {
+                for barcode in detected {
+                    let key = "\(barcode.type.rawValue)|\(barcode.rawValue)"
+                    if seen.insert(key).inserted {
+                        results.append(barcode)
+                    }
+                }
+            }
+            return results
         }
 
         presentScanResults(allDetected)
