@@ -136,7 +136,7 @@ final class BarcodeImageCache: Sendable {
         }
     }
 
-    func removeAll() {
+    nonisolated func removeAll() {
         cache.removeAllObjects()
         try? FileManager.default.removeItem(at: diskCacheURL)
         try? FileManager.default.createDirectory(at: diskCacheURL, withIntermediateDirectories: true)
