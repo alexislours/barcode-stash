@@ -3,10 +3,10 @@ import Foundation
 
 // MARK: - Module Placement & Rendering
 
-extension DataMatrixEncoder {
+nonisolated extension DataMatrixEncoder {
     // MARK: - Module Placement (Utah Algorithm)
 
-    struct ModulePlacer {
+    nonisolated struct ModulePlacer {
         let codewords: [UInt8]
         let numrows: Int
         let numcols: Int

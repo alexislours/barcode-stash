@@ -2,10 +2,10 @@ import Foundation
 
 // MARK: - X12, EDIFACT & Base256 Mode Encoders
 
-extension DataMatrixEncoder {
+nonisolated extension DataMatrixEncoder {
     // MARK: - X12 Encoder
 
-    struct X12Encoder {
+    nonisolated struct X12Encoder {
         func encode(_ ctx: EncoderContext) {
             var buffer: [UInt8] = []
             while ctx.hasMoreCharacters {
@@ -64,7 +64,7 @@ extension DataMatrixEncoder {
 
     // MARK: - EDIFACT Encoder
 
-    struct EdifactEncoder {
+    nonisolated struct EdifactEncoder {
         func encode(_ ctx: EncoderContext) {
             var buffer: [UInt8] = []
             while ctx.hasMoreCharacters {
@@ -183,7 +183,7 @@ extension DataMatrixEncoder {
 
     // MARK: - Base256 Encoder
 
-    struct Base256Encoder {
+    nonisolated struct Base256Encoder {
         func encode(_ ctx: EncoderContext) {
             var buffer: [UInt8] = [0] // length placeholder
             while ctx.hasMoreCharacters {

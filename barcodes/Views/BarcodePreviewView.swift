@@ -48,7 +48,30 @@ struct BarcodePreviewView: View {
                 return
             }
 
-            if let generated = BarcodeGenerator.generateImage(for: barcode, size: size) {
+            // Capture values from @Model on MainActor before crossing isolation boundary
+            let rawValue = barcode.rawValue
+            let type = barcode.type
+            let descriptorArchive = barcode.descriptorArchive
+            let correctionLevel = barcode.correctionLevel
+            let isCompactStyle = barcode.isCompactStyle
+            let compactionMode = barcode.compactionMode
+            let columnCount = barcode.columnCount
+            let targetSize = size
+
+            let generated = await Task.detached {
+                BarcodeGenerator.generateImage(
+                    rawValue: rawValue,
+                    type: type,
+                    descriptorArchive: descriptorArchive,
+                    correctionLevel: correctionLevel,
+                    isCompactStyle: isCompactStyle,
+                    compactionMode: compactionMode,
+                    columnCount: columnCount,
+                    size: targetSize
+                )
+            }.value
+
+            if let generated {
                 await BarcodeImageCache.shared.storeImage(generated, for: key)
                 image = generated
             }

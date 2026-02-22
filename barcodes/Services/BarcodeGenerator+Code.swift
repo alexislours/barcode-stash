@@ -2,7 +2,7 @@ import CoreImage
 
 // MARK: - Code 39, Code 93, ITF-14 Encoding
 
-extension BarcodeGenerator {
+nonisolated extension BarcodeGenerator {
     // MARK: - Code 39
 
     /// Each character: 9 elements (BSBSBSBSB), 0=narrow 1=wide

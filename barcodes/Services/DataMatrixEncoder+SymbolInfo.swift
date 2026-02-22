@@ -1,9 +1,9 @@
 import Foundation
 
-extension DataMatrixEncoder {
+nonisolated extension DataMatrixEncoder {
     // MARK: - Symbol Info
 
-    struct SymbolInfo {
+    nonisolated struct SymbolInfo {
         let rectangular: Bool
         let dataCapacity: Int
         let errorCodewords: Int

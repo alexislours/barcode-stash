@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Reed-Solomon Error Correction
 
-extension DataMatrixEncoder {
+nonisolated extension DataMatrixEncoder {
     static let factorSets = [
         5, 7, 10, 11, 12, 14, 18, 20, 24, 28, 36, 42, 48, 56, 62, 68,
     ]

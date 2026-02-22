@@ -2,7 +2,7 @@ import CoreImage
 
 // MARK: - EAN / UPC Encoding
 
-extension BarcodeGenerator {
+nonisolated extension BarcodeGenerator {
     // MARK: - EAN / UPC Encoding Tables
 
     /// L-code (odd parity), G-code (even parity), R-code - 7 modules each

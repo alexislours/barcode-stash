@@ -81,10 +81,27 @@ struct ShareBarcodeSheet: View {
                 }
             }
             .task {
-                barcodeImage = BarcodeGenerator.generateImage(
-                    for: barcode,
-                    size: CGSize(width: 300, height: 300)
-                )
+                // Capture values from @Model on MainActor before crossing isolation boundary
+                let rawValue = barcode.rawValue
+                let type = barcode.type
+                let descriptorArchive = barcode.descriptorArchive
+                let correctionLevel = barcode.correctionLevel
+                let isCompactStyle = barcode.isCompactStyle
+                let compactionMode = barcode.compactionMode
+                let columnCount = barcode.columnCount
+
+                barcodeImage = await Task.detached {
+                    BarcodeGenerator.generateImage(
+                        rawValue: rawValue,
+                        type: type,
+                        descriptorArchive: descriptorArchive,
+                        correctionLevel: correctionLevel,
+                        isCompactStyle: isCompactStyle,
+                        compactionMode: compactionMode,
+                        columnCount: columnCount,
+                        size: CGSize(width: 300, height: 300)
+                    )
+                }.value
                 await loadMapSnapshot()
             }
             .task(id: shareRenderKey) {

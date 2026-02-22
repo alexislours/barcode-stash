@@ -13,7 +13,7 @@ enum DataMatrixEncoder {
     /// (after error-correction recovery), preserving the original encoder's mode choices.
     /// Pads and recomputes ECC (which is deterministic) to get the full codeword stream
     /// for module placement.
-    static func generateImage(
+    nonisolated static func generateImage(
         fromPayload payload: Data,
         rowCount: Int,
         columnCount: Int,
@@ -34,7 +34,7 @@ enum DataMatrixEncoder {
     /// Generates a CIImage for the given text as a Data Matrix barcode.
     /// Tries CIDataMatrixCodeDescriptor first for pixel-perfect rendering;
     /// falls back to a custom bitmap renderer if the descriptor isn't accepted.
-    static func generateImage(for text: String) -> CIImage? {
+    nonisolated static func generateImage(for text: String) -> CIImage? {
         guard !text.isEmpty else { return nil }
         guard let codewords = try? encodeHighLevel(text) else { return nil }
         guard let symbol = SymbolInfo.lookup(
@@ -64,24 +64,24 @@ enum DataMatrixEncoder {
 
     // MARK: - Encoding Modes
 
-    enum EncodingMode: Int {
+    nonisolated enum EncodingMode: Int {
         case ascii = 0, c40, text, x12, edifact, base256
     }
 
     // MARK: - Latch Codes
 
-    static let latchToC40: UInt8 = 230
-    static let latchToBase256: UInt8 = 231
-    static let upperShift: UInt8 = 235
-    static let latchToX12: UInt8 = 238
-    static let latchToText: UInt8 = 239
-    static let latchToEdifact: UInt8 = 240
-    static let unlatch: UInt8 = 254
-    static let pad: UInt8 = 129
+    nonisolated static let latchToC40: UInt8 = 230
+    nonisolated static let latchToBase256: UInt8 = 231
+    nonisolated static let upperShift: UInt8 = 235
+    nonisolated static let latchToX12: UInt8 = 238
+    nonisolated static let latchToText: UInt8 = 239
+    nonisolated static let latchToEdifact: UInt8 = 240
+    nonisolated static let unlatch: UInt8 = 254
+    nonisolated static let pad: UInt8 = 129
 
     // MARK: - Mode Encoder Dispatch
 
-    enum AnyModeEncoder {
+    nonisolated enum AnyModeEncoder {
         case ascii(ASCIIEncoder)
         case c40(C40Encoder)
         case text(TextEncoder)
@@ -103,7 +103,7 @@ enum DataMatrixEncoder {
 
     // MARK: - Encoder Context
 
-    final class EncoderContext {
+    final nonisolated class EncoderContext {
         let message: [UInt8]
         var codewords: [UInt8] = []
         var pos: Int = 0
@@ -172,14 +172,14 @@ enum DataMatrixEncoder {
 
     // MARK: - Encoding Error
 
-    enum EncodingError: Error {
+    nonisolated enum EncodingError: Error {
         case invalidCharacter
         case capacityExceeded
     }
 
     // MARK: - Padding
 
-    static func padToCapacity(_ data: inout [UInt8], capacity: Int) {
+    nonisolated static func padToCapacity(_ data: inout [UInt8], capacity: Int) {
         guard data.count < capacity else { return }
         data.append(pad)
         while data.count < capacity {
@@ -192,7 +192,7 @@ enum DataMatrixEncoder {
 
     // MARK: - High-Level Encoder
 
-    static func encodeHighLevel(_ text: String) throws(EncodingError) -> [UInt8] {
+    nonisolated static func encodeHighLevel(_ text: String) throws(EncodingError) -> [UInt8] {
         let encoders: [AnyModeEncoder] = [
             .ascii(ASCIIEncoder()), .c40(C40Encoder()), .text(TextEncoder()),
             .x12(X12Encoder()), .edifact(EdifactEncoder()), .base256(Base256Encoder()),

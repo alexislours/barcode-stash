@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Character Classification & Lookahead
 
-extension DataMatrixEncoder {
+nonisolated extension DataMatrixEncoder {
     // MARK: - Character Classification
 
     static func isDigit(_ char: UInt8) -> Bool {

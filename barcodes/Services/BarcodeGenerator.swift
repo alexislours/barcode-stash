@@ -31,7 +31,7 @@ enum PDF417CompactionMode: String, CaseIterable {
         }
     }
 
-    var filterValue: Float {
+    nonisolated var filterValue: Float {
         switch self {
         case .automatic: 0
         case .numeric: 1
@@ -42,17 +42,35 @@ enum PDF417CompactionMode: String, CaseIterable {
 }
 
 enum BarcodeGenerator {
-    private static let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+    private nonisolated static let ciContext = CIContext(options: [.useSoftwareRenderer: false])
 
     // MARK: - Public API
 
-    static func generateImage(for barcode: ScannedBarcode, size: CGSize = CGSize(width: 200, height: 200)) -> UIImage? {
-        let outputImage: CIImage? = if let descriptorImage = generateFromDescriptor(barcode: barcode) {
+    nonisolated static func generateImage(
+        rawValue: String,
+        type: BarcodeType,
+        descriptorArchive: Data?,
+        correctionLevel: String?,
+        isCompactStyle: Bool,
+        compactionMode: String?,
+        columnCount: Int?,
+        size: CGSize = CGSize(width: 200, height: 200)
+    ) -> UIImage? {
+        let outputImage: CIImage? = if let descriptorImage = generateFromDescriptor(
+            descriptorArchive: descriptorArchive
+        ) {
             descriptorImage
-        } else if let customImage = generateCustomBarcode(barcode: barcode) {
+        } else if let customImage = generateCustomBarcode(rawValue: rawValue, type: type) {
             customImage
         } else {
-            generateFromCIFilter(barcode: barcode)
+            generateFromCIFilter(
+                rawValue: rawValue,
+                type: type,
+                correctionLevel: correctionLevel,
+                isCompactStyle: isCompactStyle,
+                compactionMode: compactionMode,
+                columnCount: columnCount
+            )
         }
 
         guard let image = outputImage else { return nil }
@@ -88,8 +106,8 @@ enum BarcodeGenerator {
 
     // MARK: - Descriptor-Based (pixel-identical for QR, Aztec, PDF417, DataMatrix)
 
-    private static func generateFromDescriptor(barcode: ScannedBarcode) -> CIImage? {
-        guard let archive = barcode.descriptorArchive,
+    private nonisolated static func generateFromDescriptor(descriptorArchive: Data?) -> CIImage? {
+        guard let archive = descriptorArchive,
               let descriptor = try? NSKeyedUnarchiver.unarchivedObject(
                   ofClasses: [
                       CIBarcodeDescriptor.self,
@@ -119,70 +137,97 @@ enum BarcodeGenerator {
 
     // MARK: - CIFilter-Based (QR fallback, Code 128, PDF417, Aztec)
 
-    private static func generateFromCIFilter(barcode: ScannedBarcode) -> CIImage? {
-        let filter: CIFilter? = switch barcode.type {
-        case .qr: makeQRFilter(for: barcode)
-        case .pdf417: makePDF417Filter(for: barcode)
-        case .aztec: makeAztecFilter(for: barcode)
+    private nonisolated static func generateFromCIFilter(
+        rawValue: String,
+        type: BarcodeType,
+        correctionLevel: String?,
+        isCompactStyle: Bool,
+        compactionMode: String?,
+        columnCount: Int?
+    ) -> CIImage? {
+        let filter: CIFilter? = switch type {
+        case .qr: makeQRFilter(rawValue: rawValue, correctionLevel: correctionLevel)
+        case .pdf417: makePDF417Filter(
+                rawValue: rawValue,
+                correctionLevel: correctionLevel,
+                isCompactStyle: isCompactStyle,
+                compactionMode: compactionMode,
+                columnCount: columnCount
+            )
+        case .aztec: makeAztecFilter(
+                rawValue: rawValue,
+                correctionLevel: correctionLevel,
+                isCompactStyle: isCompactStyle
+            )
         case .dataMatrix: nil
-        default: makeCode128Filter(for: barcode)
+        default: makeCode128Filter(rawValue: rawValue)
         }
         return filter?.outputImage
     }
 
-    private static func makeQRFilter(for barcode: ScannedBarcode) -> CIFilter {
+    private nonisolated static func makeQRFilter(rawValue: String, correctionLevel: String?) -> CIFilter {
         let filter = CIFilter.qrCodeGenerator()
-        filter.message = Data(barcode.rawValue.utf8)
-        filter.correctionLevel = barcode.correctionLevel ?? "M"
+        filter.message = Data(rawValue.utf8)
+        filter.correctionLevel = correctionLevel ?? "M"
         return filter
     }
 
-    private static func makeCode128Filter(for barcode: ScannedBarcode) -> CIFilter {
+    private nonisolated static func makeCode128Filter(rawValue: String) -> CIFilter {
         let filter = CIFilter.code128BarcodeGenerator()
-        filter.message = Data(barcode.rawValue.utf8)
+        filter.message = Data(rawValue.utf8)
         return filter
     }
 
-    private static func makePDF417Filter(for barcode: ScannedBarcode) -> CIFilter {
+    private nonisolated static func makePDF417Filter(
+        rawValue: String,
+        correctionLevel: String?,
+        isCompactStyle: Bool,
+        compactionMode: String?,
+        columnCount: Int?
+    ) -> CIFilter {
         let filter = CIFilter.pdf417BarcodeGenerator()
-        filter.message = Data(barcode.rawValue.utf8)
-        if let level = barcode.correctionLevel, let intLevel = Int(level) {
+        filter.message = Data(rawValue.utf8)
+        if let level = correctionLevel, let intLevel = Int(level) {
             filter.correctionLevel = Float(intLevel)
         }
-        if let mode = barcode.compactionMode,
+        if let mode = compactionMode,
            let compaction = PDF417CompactionMode(rawValue: mode) {
             filter.compactionMode = compaction.filterValue
         }
-        filter.compactStyle = barcode.isCompactStyle ? 1 : 0
-        if let cols = barcode.columnCount, cols > 0 {
+        filter.compactStyle = isCompactStyle ? 1 : 0
+        if let cols = columnCount, cols > 0 {
             filter.dataColumns = Float(cols)
         }
         return filter
     }
 
-    private static func makeAztecFilter(for barcode: ScannedBarcode) -> CIFilter {
+    private nonisolated static func makeAztecFilter(
+        rawValue: String,
+        correctionLevel: String?,
+        isCompactStyle: Bool
+    ) -> CIFilter {
         let filter = CIFilter.aztecCodeGenerator()
-        filter.message = Data(barcode.rawValue.utf8)
-        if let level = barcode.correctionLevel, let pct = Float(level) {
+        filter.message = Data(rawValue.utf8)
+        if let level = correctionLevel, let pct = Float(level) {
             filter.correctionLevel = pct
         }
-        filter.compactStyle = barcode.isCompactStyle ? 1 : 0
+        filter.compactStyle = isCompactStyle ? 1 : 0
         return filter
     }
 
     // MARK: - Custom Barcode Generation
 
-    private static func generateCustomBarcode(barcode: ScannedBarcode) -> CIImage? {
+    private nonisolated static func generateCustomBarcode(rawValue: String, type: BarcodeType) -> CIImage? {
         let modules: [Bool]?
-        switch barcode.type {
-        case .ean13: modules = encodeEAN13(barcode.rawValue)
-        case .ean8: modules = encodeEAN8(barcode.rawValue)
-        case .upce: modules = encodeUPCE(barcode.rawValue)
-        case .code39: modules = encodeCode39(barcode.rawValue)
-        case .code93: modules = encodeCode93(barcode.rawValue)
-        case .itf14: modules = encodeITF14(barcode.rawValue)
+        switch type {
+        case .ean13: modules = encodeEAN13(rawValue)
+        case .ean8: modules = encodeEAN8(rawValue)
+        case .upce: modules = encodeUPCE(rawValue)
+        case .code39: modules = encodeCode39(rawValue)
+        case .code93: modules = encodeCode93(rawValue)
+        case .itf14: modules = encodeITF14(rawValue)
         case .dataMatrix:
-            return DataMatrixEncoder.generateImage(for: barcode.rawValue)
+            return DataMatrixEncoder.generateImage(for: rawValue)
         default: modules = nil
         }
         guard let modules else { return nil }
@@ -191,7 +236,7 @@ enum BarcodeGenerator {
 
     // MARK: - Module Renderer
 
-    static func renderModules(_ modules: [Bool], scale: Int = 4) -> CIImage? {
+    nonisolated static func renderModules(_ modules: [Bool], scale: Int = 4) -> CIImage? {
         let quietZone = 10 * scale
         let moduleWidth = scale
         let height = 60 * scale
