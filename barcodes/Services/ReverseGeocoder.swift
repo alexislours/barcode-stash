@@ -1,6 +1,7 @@
 import CoreLocation
 import MapKit
 
+@MainActor
 enum ReverseGeocoder {
     private struct CacheEntry {
         let address: String?
