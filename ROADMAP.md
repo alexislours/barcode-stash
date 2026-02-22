@@ -12,6 +12,8 @@
 - [ ] Batch edit tags
 - [ ] Control center integration
 - [ ] Open in map from barcodes details
+- [ ] Share sheet redesign
+- [ ] Stats screen redesign
 
 ## v1.2
 
