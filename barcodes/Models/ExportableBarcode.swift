@@ -1,5 +1,5 @@
+import Foundation
 import SwiftData
-import SwiftUI
 
 enum ExportFormat {
     case json
