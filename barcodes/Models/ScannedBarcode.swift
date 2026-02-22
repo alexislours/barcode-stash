@@ -39,39 +39,41 @@ enum BarcodeType: String, Codable, CaseIterable {
         String(localized: String.LocalizationValue(rawValue))
     }
 
+    private nonisolated static let symbologyMapping: [VNBarcodeSymbology: BarcodeType] = [
+        .qr: .qr,
+        .ean13: .ean13,
+        .ean8: .ean8,
+        .upce: .upce,
+        .code128: .code128,
+        .code39: .code39,
+        .code93: .code93,
+        .pdf417: .pdf417,
+        .aztec: .aztec,
+        .dataMatrix: .dataMatrix,
+        .itf14: .itf14,
+    ]
+
     nonisolated init?(symbology: VNBarcodeSymbology) {
-        let mapping: [VNBarcodeSymbology: BarcodeType] = [
-            .qr: .qr,
-            .ean13: .ean13,
-            .ean8: .ean8,
-            .upce: .upce,
-            .code128: .code128,
-            .code39: .code39,
-            .code93: .code93,
-            .pdf417: .pdf417,
-            .aztec: .aztec,
-            .dataMatrix: .dataMatrix,
-            .itf14: .itf14,
-        ]
-        guard let barcodeType = mapping[symbology] else { return nil }
+        guard let barcodeType = Self.symbologyMapping[symbology] else { return nil }
         self = barcodeType
     }
 
+    private static let metadataMapping: [AVMetadataObject.ObjectType: BarcodeType] = [
+        .qr: .qr,
+        .ean13: .ean13,
+        .ean8: .ean8,
+        .upce: .upce,
+        .code128: .code128,
+        .code39: .code39,
+        .code93: .code93,
+        .pdf417: .pdf417,
+        .aztec: .aztec,
+        .dataMatrix: .dataMatrix,
+        .itf14: .itf14,
+    ]
+
     init?(metadataType: AVMetadataObject.ObjectType) {
-        let mapping: [AVMetadataObject.ObjectType: BarcodeType] = [
-            .qr: .qr,
-            .ean13: .ean13,
-            .ean8: .ean8,
-            .upce: .upce,
-            .code128: .code128,
-            .code39: .code39,
-            .code93: .code93,
-            .pdf417: .pdf417,
-            .aztec: .aztec,
-            .dataMatrix: .dataMatrix,
-            .itf14: .itf14,
-        ]
-        guard let barcodeType = mapping[metadataType] else { return nil }
+        guard let barcodeType = Self.metadataMapping[metadataType] else { return nil }
         self = barcodeType
     }
 }
