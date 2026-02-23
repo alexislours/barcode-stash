@@ -1,6 +1,6 @@
 # What's New
 
-## Unreleased
+## 1.1.0 (2026022301) - 2026-02-23
 
 - Scan barcodes from photos in your library or via the Share Sheet from any app
 - Home Screen quick actions: long-press the app icon to jump straight to Scan, Create, or Favorites

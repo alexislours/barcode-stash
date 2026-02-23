@@ -1,6 +1,6 @@
 # Barcode Stash
 
-A native iOS app to scan, generate, and organize barcodes - with iCloud sync, smart QR actions, and zero dependencies. **Just 1.3 MB.**
+A native iOS app to scan, generate, and organize barcodes - with iCloud sync, smart QR actions, and zero dependencies. **Just 1.4 MB.**
 
 <p align="center">
   <img src="https://img.shields.io/itunes/v/6759092263?logo=apple&label=App%20Store" alt="Version">
@@ -8,7 +8,7 @@ A native iOS app to scan, generate, and organize barcodes - with iCloud sync, sm
   <img src="https://img.shields.io/badge/Swift-6-orange" alt="Swift">
   <img src="https://img.shields.io/badge/License-GPL--3.0-green" alt="License">
   <img src="https://img.shields.io/badge/Languages-10-purple" alt="Languages">
-  <img src="https://img.shields.io/badge/Download_Size-1.3_MB-brightgreen" alt="App Size">
+  <img src="https://img.shields.io/badge/Download_Size-1.4_MB-brightgreen" alt="App Size">
 </p>
 
 <p align="center">
