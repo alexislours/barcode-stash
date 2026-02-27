@@ -31,7 +31,7 @@ struct BarcodeScannerRepresentable: UIViewControllerRepresentable {
         viewController.onBarcodeScanned = onBarcodeScanned
         viewController.onBarcodeBoundsDetected = onBarcodeBoundsDetected
         viewController.setTorch(isTorchOn)
-        viewController.setZoom(zoomFactor)
+        viewController.setZoom(zoomFactor, animated: true)
 
         let newTypes = allowedBarcodeTypes.map(\.metadataObjectType)
         if Set(newTypes) != Set(viewController.allowedTypes) {

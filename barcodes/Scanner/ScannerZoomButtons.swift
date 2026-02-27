@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct ScannerZoomButtons: View {
     let presets: [ZoomPreset]
@@ -13,7 +14,10 @@ struct ScannerZoomButtons: View {
             ForEach(presets, id: \.factor) { preset in
                 let isSelected = preset == activePreset
                 Button {
-                    zoomFactor = preset.factor
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    withAccessibleAnimation(.snappy) {
+                        zoomFactor = preset.factor
+                    }
                 } label: {
                     Text(preset.label)
                         .font(isSelected ? .caption.weight(.bold) : .caption2.weight(.bold))
@@ -23,6 +27,7 @@ struct ScannerZoomButtons: View {
                         .background(
                             Circle().fill(isSelected ? .white.opacity(0.15) : .clear)
                         )
+                        .animation(.snappy, value: isSelected)
                         .frame(minWidth: 44, minHeight: 44)
                         .contentShape(.rect)
                 }

@@ -26,6 +26,16 @@ final class BarcodeScannerViewController: UIViewController {
     private var videoDevice: AVCaptureDevice?
     private var lastZoomFactor: CGFloat = 1.0
     private var desiredTorchOn = false
+    private var rampTargetFactor: CGFloat?
+
+    // Focus
+    private var focusReticleView: UIView?
+    private var focusResetTimer: Timer?
+
+    // Zoom haptics
+    private var lensSwitchOverFactors: [CGFloat] = []
+    private var lastLensIndex = 0
+
     private var highlightView: UIView?
     private var highlightPool: [UIView] = []
     private var continuousScannedKeys: Set<String> = []
@@ -35,9 +45,13 @@ final class BarcodeScannerViewController: UIViewController {
         view.backgroundColor = .black
         checkCameraAccessAndSetup()
         setupHighlightView()
+        setupFocusReticle()
 
         let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
         view.addGestureRecognizer(pinch)
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+        view.addGestureRecognizer(tap)
 
         NotificationCenter.default.addObserver(
             self, selector: #selector(appDidEnterBackground),
@@ -46,6 +60,10 @@ final class BarcodeScannerViewController: UIViewController {
         NotificationCenter.default.addObserver(
             self, selector: #selector(appWillEnterForeground),
             name: UIApplication.willEnterForegroundNotification, object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(subjectAreaDidChange),
+            name: AVCaptureDevice.subjectAreaDidChangeNotification, object: nil
         )
     }
 
@@ -90,6 +108,8 @@ final class BarcodeScannerViewController: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        focusResetTimer?.invalidate()
+        focusResetTimer = nil
         stopRunning()
     }
 
@@ -133,16 +153,28 @@ final class BarcodeScannerViewController: UIViewController {
         } catch {}
     }
 
-    func setZoom(_ factor: CGFloat) {
+    func setZoom(_ factor: CGFloat, animated: Bool = false) {
         guard let device = videoDevice else { return }
         let maxZoom = min(device.activeFormat.videoMaxZoomFactor, 20.0)
         let clamped = min(max(factor, 1.0), maxZoom)
+        if let target = rampTargetFactor, abs(target - clamped) <= 0.01 {
+            return
+        }
         guard abs(device.videoZoomFactor - clamped) > 0.01 else { return }
         do {
             try device.lockForConfiguration()
-            device.videoZoomFactor = clamped
+            if animated, !UIAccessibility.isReduceMotionEnabled {
+                let distance = abs(clamped - device.videoZoomFactor)
+                let rate = Float(max(1.0, min(distance / 0.3, 50.0)))
+                device.ramp(toVideoZoomFactor: clamped, withRate: rate)
+                rampTargetFactor = clamped
+            } else {
+                device.videoZoomFactor = clamped
+                rampTargetFactor = nil
+            }
             device.unlockForConfiguration()
         } catch {}
+        checkLensSwitchHaptic(for: clamped)
     }
 
     func updateAllowedTypes(_ types: [AVMetadataObject.ObjectType]) {
@@ -158,24 +190,234 @@ final class BarcodeScannerViewController: UIViewController {
 
         switch gesture.state {
         case .began:
+            do {
+                try device.lockForConfiguration()
+                device.cancelVideoZoomRamp()
+                device.unlockForConfiguration()
+            } catch {}
+            rampTargetFactor = nil
             lastZoomFactor = device.videoZoomFactor
         case .changed:
             let maxZoom = min(device.activeFormat.videoMaxZoomFactor, 20.0)
-            let desired = lastZoomFactor * gesture.scale
+            let desired = lastZoomFactor * pow(2.0, log2(max(gesture.scale, 0.01)))
             let clamped = min(max(desired, 1.0), maxZoom)
             do {
                 try device.lockForConfiguration()
                 device.videoZoomFactor = clamped
                 device.unlockForConfiguration()
             } catch { break }
+            checkLensSwitchHaptic(for: clamped)
             onZoomChanged?(clamped)
         default:
             break
         }
     }
 
-    // MARK: - Highlight
+    // MARK: - Camera Setup
 
+    private func setupCamera() {
+        let device: AVCaptureDevice? = {
+            let discovery = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [
+                    .builtInTripleCamera, .builtInDualWideCamera,
+                    .builtInDualCamera, .builtInWideAngleCamera,
+                ],
+                mediaType: .video,
+                position: .back
+            )
+            return discovery.devices.first
+        }()
+
+        guard let device, let input = try? AVCaptureDeviceInput(device: device) else { return }
+
+        videoDevice = device
+
+        captureSession.beginConfiguration()
+        if captureSession.canAddInput(input) {
+            captureSession.addInput(input)
+        }
+
+        let output = AVCaptureMetadataOutput()
+        if captureSession.canAddOutput(output) {
+            captureSession.addOutput(output)
+            output.setMetadataObjectsDelegate(self, queue: .main)
+            output.metadataObjectTypes = allowedTypes
+            metadataOutput = output
+        }
+        captureSession.commitConfiguration()
+
+        do {
+            try device.lockForConfiguration()
+            device.isSubjectAreaChangeMonitoringEnabled = true
+            device.unlockForConfiguration()
+        } catch {}
+
+        lensSwitchOverFactors = device.virtualDeviceSwitchOverVideoZoomFactors
+            .map { CGFloat(truncating: $0) }
+        lastLensIndex = lensIndex(for: device.videoZoomFactor)
+
+        let layer = AVCaptureVideoPreviewLayer(session: captureSession)
+        layer.videoGravity = .resizeAspectFill
+        layer.frame = view.bounds
+        view.layer.addSublayer(layer)
+        previewLayer = layer
+
+        let presets = computeZoomPresets(for: device)
+        Task { [weak self] in
+            self?.onSetupComplete?(presets)
+        }
+    }
+
+    private func lensIndex(for factor: CGFloat) -> Int {
+        var index = 0
+        for switchOver in lensSwitchOverFactors where factor >= switchOver {
+            index += 1
+        }
+        return index
+    }
+
+    private func checkLensSwitchHaptic(for factor: CGFloat) {
+        let newIndex = lensIndex(for: factor)
+        if newIndex != lastLensIndex {
+            lastLensIndex = newIndex
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        }
+    }
+
+    private func computeZoomPresets(for device: AVCaptureDevice) -> [ZoomPreset] {
+        let hasUltraWide = device.deviceType == .builtInTripleCamera
+            || device.deviceType == .builtInDualWideCamera
+
+        let switchOvers = device.virtualDeviceSwitchOverVideoZoomFactors
+            .map { CGFloat(truncating: $0) }
+
+        if hasUltraWide {
+            // Device zoom 1.0 = ultra-wide lens.
+            // First switch-over = wide lens (the "1x" reference point).
+            let wideZoom = switchOvers.first ?? 2.0
+            var presets = [
+                ZoomPreset(factor: 1.0, label: formatLabel(1.0 / wideZoom)),
+                ZoomPreset(factor: wideZoom, label: "1x"),
+            ]
+            if switchOvers.count > 1 {
+                let teleZoom = switchOvers[1]
+                presets.append(ZoomPreset(factor: teleZoom, label: formatLabel(teleZoom / wideZoom)))
+            }
+            return presets
+        } else {
+            // Device zoom 1.0 = wide lens = "1x".
+            var presets = [ZoomPreset(factor: 1.0, label: "1x")]
+            if let switchOver = switchOvers.first {
+                presets.append(ZoomPreset(factor: switchOver, label: formatLabel(switchOver)))
+            }
+            return presets
+        }
+    }
+
+    private func formatLabel(_ value: CGFloat) -> String {
+        if value < 1.0 {
+            ".\(Int(round(value * 10)))"
+        } else if value == value.rounded(.down) {
+            "\(Int(value))x"
+        } else {
+            String(format: "%.1fx", value)
+        }
+    }
+}
+
+// MARK: - Tap-to-Focus
+
+extension BarcodeScannerViewController {
+    private func setupFocusReticle() {
+        let reticle = UIView(frame: CGRect(x: 0, y: 0, width: 70, height: 70))
+        reticle.layer.borderColor = UIColor.systemYellow.cgColor
+        reticle.layer.borderWidth = 1.5
+        reticle.layer.cornerRadius = 2
+        reticle.alpha = 0
+        reticle.isUserInteractionEnabled = false
+        view.addSubview(reticle)
+        focusReticleView = reticle
+    }
+
+    @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
+        guard let device = videoDevice,
+              let previewLayer,
+              device.isFocusPointOfInterestSupported
+        else { return }
+
+        let screenPoint = gesture.location(in: view)
+        let devicePoint = previewLayer.captureDevicePointConverted(fromLayerPoint: screenPoint)
+
+        do {
+            try device.lockForConfiguration()
+            device.focusPointOfInterest = devicePoint
+            device.focusMode = .autoFocus
+            if device.isExposurePointOfInterestSupported {
+                device.exposurePointOfInterest = devicePoint
+                device.exposureMode = .autoExpose
+            }
+            device.unlockForConfiguration()
+        } catch {}
+
+        showFocusReticle(at: screenPoint)
+        scheduleFocusReset()
+    }
+
+    private func showFocusReticle(at point: CGPoint) {
+        guard let reticle = focusReticleView else { return }
+        reticle.center = point
+        reticle.transform = CGAffineTransform(scaleX: 1.5, y: 1.5)
+        reticle.alpha = 1.0
+        reticle.layer.removeAllAnimations()
+
+        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut) {
+            reticle.transform = .identity
+        }
+        UIView.animate(withDuration: 0.3, delay: 1.5, options: .curveEaseIn) {
+            reticle.alpha = 0
+        }
+    }
+
+    private func scheduleFocusReset() {
+        focusResetTimer?.invalidate()
+        focusResetTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.resetFocusToContinuous()
+            }
+        }
+    }
+
+    @objc private func subjectAreaDidChange() {
+        resetFocusToContinuous()
+    }
+
+    private func resetFocusToContinuous() {
+        focusResetTimer?.invalidate()
+        focusResetTimer = nil
+
+        guard let device = videoDevice else { return }
+        do {
+            try device.lockForConfiguration()
+            if device.isFocusModeSupported(.continuousAutoFocus) {
+                device.focusMode = .continuousAutoFocus
+            }
+            if device.isExposureModeSupported(.continuousAutoExposure) {
+                device.exposureMode = .continuousAutoExposure
+            }
+            device.unlockForConfiguration()
+        } catch {}
+
+        if let reticle = focusReticleView, reticle.alpha > 0 {
+            UIView.animate(withDuration: 0.2) {
+                reticle.alpha = 0
+            }
+        }
+    }
+}
+
+// MARK: - Highlight
+
+extension BarcodeScannerViewController {
     private func setupHighlightView() {
         let highlight = UIView()
         highlight.layer.cornerRadius = 8
@@ -251,88 +493,9 @@ final class BarcodeScannerViewController: UIViewController {
             }
         }
     }
-
-    private func setupCamera() {
-        let device: AVCaptureDevice? = {
-            let discovery = AVCaptureDevice.DiscoverySession(
-                deviceTypes: [
-                    .builtInTripleCamera, .builtInDualWideCamera,
-                    .builtInDualCamera, .builtInWideAngleCamera,
-                ],
-                mediaType: .video,
-                position: .back
-            )
-            return discovery.devices.first
-        }()
-
-        guard let device, let input = try? AVCaptureDeviceInput(device: device) else { return }
-
-        videoDevice = device
-
-        if captureSession.canAddInput(input) {
-            captureSession.addInput(input)
-        }
-
-        let output = AVCaptureMetadataOutput()
-        if captureSession.canAddOutput(output) {
-            captureSession.addOutput(output)
-            output.setMetadataObjectsDelegate(self, queue: .main)
-            output.metadataObjectTypes = allowedTypes
-            metadataOutput = output
-        }
-
-        let layer = AVCaptureVideoPreviewLayer(session: captureSession)
-        layer.videoGravity = .resizeAspectFill
-        layer.frame = view.bounds
-        view.layer.addSublayer(layer)
-        previewLayer = layer
-
-        let presets = computeZoomPresets(for: device)
-        Task { [weak self] in
-            self?.onSetupComplete?(presets)
-        }
-    }
-
-    private func computeZoomPresets(for device: AVCaptureDevice) -> [ZoomPreset] {
-        let hasUltraWide = device.deviceType == .builtInTripleCamera
-            || device.deviceType == .builtInDualWideCamera
-
-        let switchOvers = device.virtualDeviceSwitchOverVideoZoomFactors
-            .map { CGFloat(truncating: $0) }
-
-        if hasUltraWide {
-            // Device zoom 1.0 = ultra-wide lens.
-            // First switch-over = wide lens (the "1x" reference point).
-            let wideZoom = switchOvers.first ?? 2.0
-            var presets = [
-                ZoomPreset(factor: 1.0, label: formatLabel(1.0 / wideZoom)),
-                ZoomPreset(factor: wideZoom, label: "1x"),
-            ]
-            if switchOvers.count > 1 {
-                let teleZoom = switchOvers[1]
-                presets.append(ZoomPreset(factor: teleZoom, label: formatLabel(teleZoom / wideZoom)))
-            }
-            return presets
-        } else {
-            // Device zoom 1.0 = wide lens = "1x".
-            var presets = [ZoomPreset(factor: 1.0, label: "1x")]
-            if let switchOver = switchOvers.first {
-                presets.append(ZoomPreset(factor: switchOver, label: formatLabel(switchOver)))
-            }
-            return presets
-        }
-    }
-
-    private func formatLabel(_ value: CGFloat) -> String {
-        if value < 1.0 {
-            ".\(Int(round(value * 10)))"
-        } else if value == value.rounded(.down) {
-            "\(Int(value))x"
-        } else {
-            String(format: "%.1fx", value)
-        }
-    }
 }
+
+// MARK: - Metadata Detection
 
 extension BarcodeScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
     func metadataOutput(
