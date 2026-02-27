@@ -1,5 +1,9 @@
 # What's New
 
+## 1.1.1 (2026022701) - 2026-02-27
+
+- Fixed English localization not being marked as complete
+
 ## 1.1.0 (2026022301) - 2026-02-23
 
 - Scan barcodes from photos in your library or via the Share Sheet from any app
