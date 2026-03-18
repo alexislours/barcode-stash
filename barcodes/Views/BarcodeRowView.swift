@@ -71,7 +71,7 @@ struct BarcodeRowView: View {
                             .font(.caption)
                             .foregroundStyle(.blue)
                     }
-                    Text(barcode.type.localizedName)
+                    Text(barcode.title ?? barcode.type.localizedName)
                         .font(.headline)
                 }
                 if let description = barcode.barcodeDescription {

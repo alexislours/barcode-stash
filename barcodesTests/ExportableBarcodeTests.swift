@@ -51,6 +51,7 @@ struct ExportableBarcodeCodableTests {
         let decoded = try roundTrip(original)
 
         #expect(decoded.rawValue == "4006381333931")
+        #expect(decoded.title == nil)
         #expect(decoded.type == "EAN-13")
         #expect(decoded.latitude == 48.8566)
         #expect(decoded.longitude == 2.3522)
@@ -79,6 +80,7 @@ struct ExportableBarcodeCodableTests {
         let decoded = try roundTrip(original)
 
         #expect(decoded.rawValue == "https://example.com")
+        #expect(decoded.title == nil)
         #expect(decoded.type == "QR")
         #expect(decoded.latitude == nil)
         #expect(decoded.longitude == nil)
@@ -161,7 +163,7 @@ struct ExportableBarcodeCSVTests {
         let barcodes = [ScannedBarcode(rawValue: "test", type: .qr, timestamp: Self.fixedDate)]
         let lines = try csvLines(from: barcodes)
         let expected = [
-            "rawValue", "type", "latitude", "longitude", "barcodeDescription",
+            "rawValue", "title", "type", "latitude", "longitude", "barcodeDescription",
             "timestamp", "isFavorite", "tags", "address", "isGenerated",
             "lastModified", "correctionLevel", "isCompactStyle", "compactionMode", "columnCount",
         ]
@@ -239,10 +241,11 @@ struct ExportableBarcodeCSVTests {
             timestamp: Self.fixedDate
         )
         let lines = try csvLines(from: [barcode])
-        // latitude and longitude (columns 3-4) should be empty
+        // title (column 2), latitude and longitude (columns 4-5) should be empty
         let fields = lines[1].split(separator: ",", omittingEmptySubsequences: false).map(String.init)
-        #expect(fields[2] == "")  // latitude
-        #expect(fields[3] == "")  // longitude
+        #expect(fields[1] == "")  // title
+        #expect(fields[3] == "")  // latitude
+        #expect(fields[4] == "")  // longitude
     }
 
     @Test("Multiple barcodes produce correct row count")
@@ -299,6 +302,7 @@ struct ExportableBarcodeBackwardCompatTests {
             ExportableBarcode.self, from: Data(json.utf8)
         )
         #expect(decoded.rawValue == "12345678")
+        #expect(decoded.title == nil)
         #expect(decoded.type == "EAN-8")
         #expect(decoded.latitude == nil)
         #expect(decoded.longitude == nil)

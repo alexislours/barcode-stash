@@ -8,6 +8,7 @@ enum ExportFormat {
 
 struct ExportableBarcode: Codable {
     var rawValue: String
+    var title: String?
     var type: String
     var latitude: Double?
     var longitude: Double?
@@ -26,6 +27,7 @@ struct ExportableBarcode: Codable {
     var columnCount: Int?
     @MainActor init(from barcode: ScannedBarcode) {
         rawValue = barcode.rawValue
+        title = barcode.title
         type = barcode.type.rawValue
         latitude = barcode.latitude
         longitude = barcode.longitude
@@ -67,7 +69,7 @@ struct ExportableBarcode: Codable {
     // MARK: - CSV Helpers
 
     private static let csvColumns = [
-        "rawValue", "type", "latitude", "longitude", "barcodeDescription",
+        "rawValue", "title", "type", "latitude", "longitude", "barcodeDescription",
         "timestamp", "isFavorite", "tags", "address", "isGenerated",
         "lastModified", "correctionLevel", "isCompactStyle", "compactionMode", "columnCount",
     ]
@@ -85,6 +87,7 @@ struct ExportableBarcode: Codable {
         for barcode in barcodes {
             var fields: [String] = []
             fields.append(escapeCSVField(barcode.rawValue))
+            fields.append(escapeCSVField(barcode.title ?? ""))
             fields.append(escapeCSVField(barcode.type))
             fields.append(barcode.latitude.map { String($0) } ?? "")
             fields.append(barcode.longitude.map { String($0) } ?? "")
@@ -119,6 +122,7 @@ struct ExportableBarcode: Codable {
         }
         return ScannedBarcode(
             rawValue: rawValue,
+            title: title,
             type: barcodeType,
             latitude: latitude,
             longitude: longitude,

@@ -5,6 +5,7 @@ struct GeneratorView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var selectedType: BarcodeType = .qr
     @State private var inputText = ""
+    @State private var titleText = ""
     @State private var descriptionText = ""
     @State private var showSavedConfirmation = false
     @State private var isSaving = false
@@ -22,7 +23,7 @@ struct GeneratorView: View {
 
     var onSave: ((ScannedBarcode) -> Void)?
 
-    private enum Field { case input, description }
+    private enum Field { case input, title, description }
 
     private var supportsMultiline: Bool {
         switch selectedType {
@@ -80,6 +81,7 @@ struct GeneratorView: View {
                     pdf417CompactStyle: $pdf417CompactStyle,
                     pdf417ColumnCount: $pdf417ColumnCount
                 )
+                titleSection
                 notesSection
                 saveSection
             }
@@ -234,6 +236,15 @@ struct GeneratorView: View {
         }
     }
 
+    // MARK: - Title
+
+    private var titleSection: some View {
+        Section("Title") {
+            TextField("Title (optional)", text: $titleText)
+                .focused($focusedField, equals: .title)
+        }
+    }
+
     // MARK: - Notes
 
     private var notesSection: some View {
@@ -265,6 +276,7 @@ struct GeneratorView: View {
         isSaving = true
 
         let barcode = createBarcodeWithOptions(rawValue: inputText, type: selectedType)
+        barcode.title = titleText.isEmpty ? nil : titleText
         barcode.barcodeDescription = descriptionText.isEmpty ? nil : descriptionText
         barcode.isGenerated = true
         modelContext.insert(barcode)
@@ -288,6 +300,7 @@ struct GeneratorView: View {
 
     private func resetForm() {
         inputText = ""
+        titleText = ""
         descriptionText = ""
         resetAdvancedOptions()
     }

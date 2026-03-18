@@ -81,6 +81,7 @@ enum BarcodeType: String, Codable, CaseIterable {
 @Model
 final class ScannedBarcode {
     var rawValue: String = ""
+    var title: String?
     var type: BarcodeType = BarcodeType.qr
     var latitude: Double?
     var longitude: Double?
@@ -111,6 +112,7 @@ final class ScannedBarcode {
 
     init(
         rawValue: String,
+        title: String? = nil,
         type: BarcodeType,
         latitude: Double? = nil,
         longitude: Double? = nil,
@@ -128,6 +130,7 @@ final class ScannedBarcode {
         columnCount: Int? = nil
     ) {
         self.rawValue = rawValue
+        self.title = title
         self.type = type
         self.latitude = latitude
         self.longitude = longitude

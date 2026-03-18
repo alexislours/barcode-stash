@@ -13691,6 +13691,9 @@
         }
       }
     },
+    "Tap to add a title..." : {
+
+    },
     "Text" : {
       "comment" : "PDF417 compaction mode: text",
       "localizations" : {
@@ -13964,6 +13967,12 @@
           }
         }
       }
+    },
+    "Title" : {
+
+    },
+    "Title (optional)" : {
+
     },
     "Today" : {
       "comment" : "History section header: today's date",

@@ -50,8 +50,17 @@ struct BarcodeDetailView: View {
                 }
 
                 VStack(spacing: 8) {
-                    Text(barcode.type.localizedName)
-                        .font(.title2.bold())
+                    if let title = barcode.title {
+                        Text(title)
+                            .font(.title2.bold())
+
+                        Text(barcode.type.localizedName)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text(barcode.type.localizedName)
+                            .font(.title2.bold())
+                    }
 
                     Text(barcode.rawValue)
                         .font(.body.monospaced())
@@ -63,6 +72,23 @@ struct BarcodeDetailView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Title")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+
+                    TextField("Tap to add a title...", text: Binding(
+                        get: { barcode.title ?? "" },
+                        set: {
+                            barcode.title = $0.isEmpty ? nil : $0
+                            barcode.lastModified = .now
+                        }
+                    ))
+                }
+                .padding(12)
+                .background(.fill.quinary, in: RoundedRectangle(cornerRadius: 10))
+                .padding(.horizontal)
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Notes")
