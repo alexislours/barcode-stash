@@ -1,5 +1,11 @@
 # What's New
 
+## 1.2.0 (2026022701) - 2026-02-27
+
+- Name your barcodes with a custom title, shown in the list, detail view, and generator
+- New tagging system: create, manage, and assign color-coded tags to organize your collection
+- Improved scanner camera with animated zoom controls, tap-to-focus, and lens haptics
+
 ## 1.1.1 (2026022701) - 2026-02-27
 
 - Fixed English localization not being marked as complete

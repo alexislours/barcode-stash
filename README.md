@@ -8,7 +8,7 @@ A native iOS app to scan, generate, and organize barcodes - with iCloud sync, sm
   <img src="https://img.shields.io/badge/Swift-6-orange" alt="Swift">
   <img src="https://img.shields.io/badge/License-GPL--3.0-green" alt="License">
   <img src="https://img.shields.io/badge/Languages-10-purple" alt="Languages">
-  <img src="https://img.shields.io/badge/Download_Size-1.4_MB-brightgreen" alt="App Size">
+  <img src="https://img.shields.io/badge/Download_Size-1.5_MB-brightgreen" alt="App Size">
 </p>
 
 <p align="center">
