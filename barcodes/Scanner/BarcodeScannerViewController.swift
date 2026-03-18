@@ -21,24 +21,24 @@ final class BarcodeScannerViewController: UIViewController {
 
     private nonisolated(unsafe) let captureSession = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "barcode.scanner.session")
-    private var previewLayer: AVCaptureVideoPreviewLayer?
+    var previewLayer: AVCaptureVideoPreviewLayer?
     private var metadataOutput: AVCaptureMetadataOutput?
-    private var videoDevice: AVCaptureDevice?
+    var videoDevice: AVCaptureDevice?
     private var lastZoomFactor: CGFloat = 1.0
     private var desiredTorchOn = false
     private var rampTargetFactor: CGFloat?
 
     // Focus
-    private var focusReticleView: UIView?
-    private var focusResetTimer: Timer?
+    var focusReticleView: UIView?
+    var focusResetTimer: Timer?
 
     // Zoom haptics
     private var lensSwitchOverFactors: [CGFloat] = []
     private var lastLensIndex = 0
 
-    private var highlightView: UIView?
-    private var highlightPool: [UIView] = []
-    private var continuousScannedKeys: Set<String> = []
+    var highlightView: UIView?
+    var highlightPool: [UIView] = []
+    var continuousScannedKeys: Set<String> = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -325,234 +325,14 @@ final class BarcodeScannerViewController: UIViewController {
     }
 }
 
-// MARK: - Tap-to-Focus
+// MARK: - @objc Focus Handlers
 
 extension BarcodeScannerViewController {
-    private func setupFocusReticle() {
-        let reticle = UIView(frame: CGRect(x: 0, y: 0, width: 70, height: 70))
-        reticle.layer.borderColor = UIColor.systemYellow.cgColor
-        reticle.layer.borderWidth = 1.5
-        reticle.layer.cornerRadius = 2
-        reticle.alpha = 0
-        reticle.isUserInteractionEnabled = false
-        view.addSubview(reticle)
-        focusReticleView = reticle
+    @objc func handleTap(_ gesture: UITapGestureRecognizer) {
+        handleTapToFocus(gesture)
     }
 
-    @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
-        guard let device = videoDevice,
-              let previewLayer,
-              device.isFocusPointOfInterestSupported
-        else { return }
-
-        let screenPoint = gesture.location(in: view)
-        let devicePoint = previewLayer.captureDevicePointConverted(fromLayerPoint: screenPoint)
-
-        do {
-            try device.lockForConfiguration()
-            device.focusPointOfInterest = devicePoint
-            device.focusMode = .autoFocus
-            if device.isExposurePointOfInterestSupported {
-                device.exposurePointOfInterest = devicePoint
-                device.exposureMode = .autoExpose
-            }
-            device.unlockForConfiguration()
-        } catch {}
-
-        showFocusReticle(at: screenPoint)
-        scheduleFocusReset()
-    }
-
-    private func showFocusReticle(at point: CGPoint) {
-        guard let reticle = focusReticleView else { return }
-        reticle.center = point
-        reticle.transform = CGAffineTransform(scaleX: 1.5, y: 1.5)
-        reticle.alpha = 1.0
-        reticle.layer.removeAllAnimations()
-
-        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut) {
-            reticle.transform = .identity
-        }
-        UIView.animate(withDuration: 0.3, delay: 1.5, options: .curveEaseIn) {
-            reticle.alpha = 0
-        }
-    }
-
-    private func scheduleFocusReset() {
-        focusResetTimer?.invalidate()
-        focusResetTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                self?.resetFocusToContinuous()
-            }
-        }
-    }
-
-    @objc private func subjectAreaDidChange() {
-        resetFocusToContinuous()
-    }
-
-    private func resetFocusToContinuous() {
-        focusResetTimer?.invalidate()
-        focusResetTimer = nil
-
-        guard let device = videoDevice else { return }
-        do {
-            try device.lockForConfiguration()
-            if device.isFocusModeSupported(.continuousAutoFocus) {
-                device.focusMode = .continuousAutoFocus
-            }
-            if device.isExposureModeSupported(.continuousAutoExposure) {
-                device.exposureMode = .continuousAutoExposure
-            }
-            device.unlockForConfiguration()
-        } catch {}
-
-        if let reticle = focusReticleView, reticle.alpha > 0 {
-            UIView.animate(withDuration: 0.2) {
-                reticle.alpha = 0
-            }
-        }
-    }
-}
-
-// MARK: - Highlight
-
-extension BarcodeScannerViewController {
-    private func setupHighlightView() {
-        let highlight = UIView()
-        highlight.layer.cornerRadius = 8
-        highlight.alpha = 0
-        highlight.isUserInteractionEnabled = false
-        view.addSubview(highlight)
-        highlightView = highlight
-    }
-
-    private func showHighlight(at rect: CGRect) {
-        guard let highlight = highlightView else { return }
-        let color: UIColor = continuousMode ? .systemGreen : .systemYellow
-        highlight.layer.borderColor = color.cgColor
-        highlight.layer.borderWidth = 3
-        highlight.backgroundColor = color.withAlphaComponent(0.15)
-
-        let padded = rect.insetBy(dx: -8, dy: -8)
-        highlight.frame = padded
-        highlight.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
-        highlight.alpha = 0
-
-        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut) {
-            highlight.alpha = 1
-            highlight.transform = .identity
-        }
-
-        if continuousMode {
-            UIView.animate(withDuration: 0.2, delay: 0.4, options: .curveEaseIn) {
-                highlight.alpha = 0
-            }
-        }
-    }
-
-    private func showPooledHighlight(at rect: CGRect) {
-        let highlight = highlightPool.first(where: { $0.alpha == 0 }) ?? makeHighlightView()
-        let color: UIColor = .systemGreen
-        highlight.layer.borderColor = color.cgColor
-        highlight.layer.borderWidth = 3
-        highlight.backgroundColor = color.withAlphaComponent(0.15)
-
-        let padded = rect.insetBy(dx: -8, dy: -8)
-        highlight.frame = padded
-        highlight.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
-        highlight.alpha = 0
-
-        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut) {
-            highlight.alpha = 1
-            highlight.transform = .identity
-        }
-        UIView.animate(withDuration: 0.2, delay: 0.4, options: .curveEaseIn) {
-            highlight.alpha = 0
-        }
-    }
-
-    private func makeHighlightView() -> UIView {
-        let highlight = UIView()
-        highlight.layer.cornerRadius = 8
-        highlight.alpha = 0
-        highlight.isUserInteractionEnabled = false
-        view.addSubview(highlight)
-        highlightPool.append(highlight)
-        return highlight
-    }
-
-    func hideHighlight(animated: Bool = true) {
-        let allViews = [highlightView].compactMap(\.self) + highlightPool
-        for highlight in allViews where highlight.alpha > 0 {
-            if animated {
-                UIView.animate(withDuration: 0.2) { highlight.alpha = 0 }
-            } else {
-                highlight.layer.removeAllAnimations()
-                highlight.alpha = 0
-            }
-        }
-    }
-}
-
-// MARK: - Metadata Detection
-
-extension BarcodeScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
-    func metadataOutput(
-        _: AVCaptureMetadataOutput,
-        didOutput metadataObjects: [AVMetadataObject],
-        from _: AVCaptureConnection
-    ) {
-        if continuousMode {
-            handleContinuousDetection(metadataObjects)
-        } else {
-            handleSingleDetection(metadataObjects)
-        }
-    }
-
-    private func handleSingleDetection(_ metadataObjects: [AVMetadataObject]) {
-        guard let metadata = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
-              let value = metadata.stringValue,
-              let type = BarcodeType(metadataType: metadata.type)
-        else { return }
-
-        var archive: Data?
-        if let descriptor = metadata.descriptor {
-            archive = try? NSKeyedArchiver.archivedData(withRootObject: descriptor, requiringSecureCoding: true)
-        }
-
-        if let transformed = previewLayer?.transformedMetadataObject(for: metadata) {
-            showHighlight(at: transformed.bounds)
-            onBarcodeBoundsDetected?(transformed.bounds)
-        }
-
-        stopRunning()
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
-        onBarcodeScanned?(value, type, archive)
-    }
-
-    private func handleContinuousDetection(_ metadataObjects: [AVMetadataObject]) {
-        for object in metadataObjects {
-            guard let metadata = object as? AVMetadataMachineReadableCodeObject,
-                  let value = metadata.stringValue,
-                  let type = BarcodeType(metadataType: metadata.type)
-            else { continue }
-
-            let key = "\(type.rawValue)|\(value)"
-            guard !continuousScannedKeys.contains(key) else { continue }
-            continuousScannedKeys.insert(key)
-
-            var archive: Data?
-            if let descriptor = metadata.descriptor {
-                archive = try? NSKeyedArchiver.archivedData(withRootObject: descriptor, requiringSecureCoding: true)
-            }
-
-            if let transformed = previewLayer?.transformedMetadataObject(for: metadata) {
-                showPooledHighlight(at: transformed.bounds)
-                onBarcodeBoundsDetected?(transformed.bounds)
-            }
-
-            onBarcodeScanned?(value, type, archive)
-        }
+    @objc func subjectAreaDidChange() {
+        subjectAreaChanged()
     }
 }

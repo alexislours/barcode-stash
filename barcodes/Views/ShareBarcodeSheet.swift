@@ -90,15 +90,18 @@ struct ShareBarcodeSheet: View {
                 let compactionMode = barcode.compactionMode
                 let columnCount = barcode.columnCount
 
+                let opts = BarcodeGenerator.Options(
+                    correctionLevel: correctionLevel,
+                    isCompactStyle: isCompactStyle,
+                    compactionMode: compactionMode,
+                    columnCount: columnCount
+                )
                 barcodeImage = await Task.detached {
                     BarcodeGenerator.generateImage(
                         rawValue: rawValue,
                         type: type,
                         descriptorArchive: descriptorArchive,
-                        correctionLevel: correctionLevel,
-                        isCompactStyle: isCompactStyle,
-                        compactionMode: compactionMode,
-                        columnCount: columnCount,
+                        options: opts,
                         size: CGSize(width: 300, height: 300)
                     )
                 }.value
@@ -213,30 +216,18 @@ struct ShareBarcodeSheet: View {
 
     // MARK: - Share Render Key
 
-    private var shareRenderKey: ShareRenderKey {
-        ShareRenderKey(
-            mode: mode,
-            showType: showType,
-            showRawValue: showRawValue,
-            showDescription: showDescription,
-            showDate: showDate,
-            showMap: showMap,
-            showAddress: showAddress,
-            hasBarcodeImage: barcodeImage != nil,
-            hasMapSnapshot: mapSnapshot != nil
-        )
-    }
-
-    private struct ShareRenderKey: Hashable {
-        let mode: ShareMode
-        let showType: Bool
-        let showRawValue: Bool
-        let showDescription: Bool
-        let showDate: Bool
-        let showMap: Bool
-        let showAddress: Bool
-        let hasBarcodeImage: Bool
-        let hasMapSnapshot: Bool
+    private var shareRenderKey: Int {
+        var hasher = Hasher()
+        hasher.combine(mode)
+        hasher.combine(showType)
+        hasher.combine(showRawValue)
+        hasher.combine(showDescription)
+        hasher.combine(showDate)
+        hasher.combine(showMap)
+        hasher.combine(showAddress)
+        hasher.combine(barcodeImage != nil)
+        hasher.combine(mapSnapshot != nil)
+        return hasher.finalize()
     }
 
     // MARK: - Map Snapshot

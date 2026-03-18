@@ -26,10 +26,10 @@ struct HistoryView: View {
 
     // Image scanning
     @State private var selectedPhotoItems: [PhotosPickerItem] = []
-    @State private var imageScanResults: [DetectedBarcode] = []
-    @State private var showImageScanResults = false
-    @State private var isImageScanning = false
-    @State private var showNoBarcodeAlert = false
+    @State var imageScanResults: [DetectedBarcode] = []
+    @State var showImageScanResults = false
+    @State var isImageScanning = false
+    @State var showNoBarcodeAlert = false
 
     var isEditing: Bool {
         editMode == .active
@@ -312,102 +312,5 @@ struct HistoryView: View {
                 ContentUnavailableView.search(text: searchText)
             }
         }
-    }
-
-    // MARK: - Image Scanning
-
-    private func handlePendingSharedImageScan() {
-        guard pendingSharedImageScan else { return }
-        pendingSharedImageScan = false
-        Task { await processSharedImages() }
-    }
-
-    private func presentScanResults(_ results: [DetectedBarcode]) {
-        if results.isEmpty {
-            showNoBarcodeAlert = true
-        } else {
-            imageScanResults = results
-            showImageScanResults = true
-        }
-    }
-
-    private func processSelectedPhotos(_ items: [PhotosPickerItem]) async {
-        isImageScanning = true
-        defer { isImageScanning = false }
-
-        let allDetected = await withTaskGroup(
-            of: [DetectedBarcode].self,
-            returning: [DetectedBarcode].self
-        ) { group in
-            for item in items {
-                group.addTask {
-                    guard let data = try? await item.loadTransferable(type: Data.self) else {
-                        return []
-                    }
-                    return (try? ImageBarcodeScanner.detectBarcodes(from: data)) ?? []
-                }
-            }
-
-            var results: [DetectedBarcode] = []
-            var seen = Set<String>()
-            for await detected in group {
-                for barcode in detected {
-                    let key = "\(barcode.type.rawValue)|\(barcode.rawValue)"
-                    if seen.insert(key).inserted {
-                        results.append(barcode)
-                    }
-                }
-            }
-            return results
-        }
-
-        presentScanResults(allDetected)
-    }
-
-    // MARK: - Shared Image Scanning (Share Extension)
-
-    private func processSharedImages() async {
-        guard let containerURL = FileManager.default.containerURL(
-            forSecurityApplicationGroupIdentifier: "group.com.alexislours.barcodes-app"
-        ) else { return }
-
-        let sharedDir = containerURL.appendingPathComponent("SharedImages", isDirectory: true)
-        guard let files = try? FileManager.default.contentsOfDirectory(
-            at: sharedDir, includingPropertiesForKeys: nil
-        ), !files.isEmpty else { return }
-
-        isImageScanning = true
-        defer { isImageScanning = false }
-
-        let allDetected = await withTaskGroup(
-            of: [DetectedBarcode].self,
-            returning: [DetectedBarcode].self
-        ) { group in
-            for fileURL in files {
-                group.addTask {
-                    guard let data = try? Data(contentsOf: fileURL) else {
-                        try? FileManager.default.removeItem(at: fileURL)
-                        return []
-                    }
-                    let detected = (try? ImageBarcodeScanner.detectBarcodes(from: data)) ?? []
-                    try? FileManager.default.removeItem(at: fileURL)
-                    return detected
-                }
-            }
-
-            var results: [DetectedBarcode] = []
-            var seen = Set<String>()
-            for await detected in group {
-                for barcode in detected {
-                    let key = "\(barcode.type.rawValue)|\(barcode.rawValue)"
-                    if seen.insert(key).inserted {
-                        results.append(barcode)
-                    }
-                }
-            }
-            return results
-        }
-
-        presentScanResults(allDetected)
     }
 }

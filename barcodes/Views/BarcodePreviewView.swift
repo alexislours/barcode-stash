@@ -58,15 +58,18 @@ struct BarcodePreviewView: View {
             let columnCount = barcode.columnCount
             let targetSize = size
 
+            let opts = BarcodeGenerator.Options(
+                correctionLevel: correctionLevel,
+                isCompactStyle: isCompactStyle,
+                compactionMode: compactionMode,
+                columnCount: columnCount
+            )
             let generated = await Task.detached {
                 BarcodeGenerator.generateImage(
                     rawValue: rawValue,
                     type: type,
                     descriptorArchive: descriptorArchive,
-                    correctionLevel: correctionLevel,
-                    isCompactStyle: isCompactStyle,
-                    compactionMode: compactionMode,
-                    columnCount: columnCount,
+                    options: opts,
                     size: targetSize
                 )
             }.value

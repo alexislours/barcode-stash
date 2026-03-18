@@ -42,6 +42,13 @@ enum PDF417CompactionMode: String, CaseIterable {
 }
 
 enum BarcodeGenerator {
+    struct Options {
+        var correctionLevel: String?
+        var isCompactStyle: Bool = false
+        var compactionMode: String?
+        var columnCount: Int?
+    }
+
     private nonisolated static let ciContext = CIContext(options: [.useSoftwareRenderer: false])
 
     // MARK: - Public API
@@ -50,10 +57,7 @@ enum BarcodeGenerator {
         rawValue: String,
         type: BarcodeType,
         descriptorArchive: Data?,
-        correctionLevel: String?,
-        isCompactStyle: Bool,
-        compactionMode: String?,
-        columnCount: Int?,
+        options: Options = Options(),
         size: CGSize = CGSize(width: 200, height: 200)
     ) -> UIImage? {
         let outputImage: CIImage? = if let descriptorImage = generateFromDescriptor(
@@ -66,10 +70,7 @@ enum BarcodeGenerator {
             generateFromCIFilter(
                 rawValue: rawValue,
                 type: type,
-                correctionLevel: correctionLevel,
-                isCompactStyle: isCompactStyle,
-                compactionMode: compactionMode,
-                columnCount: columnCount
+                options: options
             )
         }
 
@@ -140,24 +141,18 @@ enum BarcodeGenerator {
     private nonisolated static func generateFromCIFilter(
         rawValue: String,
         type: BarcodeType,
-        correctionLevel: String?,
-        isCompactStyle: Bool,
-        compactionMode: String?,
-        columnCount: Int?
+        options: Options
     ) -> CIImage? {
         let filter: CIFilter? = switch type {
-        case .qr: makeQRFilter(rawValue: rawValue, correctionLevel: correctionLevel)
+        case .qr: makeQRFilter(rawValue: rawValue, correctionLevel: options.correctionLevel)
         case .pdf417: makePDF417Filter(
                 rawValue: rawValue,
-                correctionLevel: correctionLevel,
-                isCompactStyle: isCompactStyle,
-                compactionMode: compactionMode,
-                columnCount: columnCount
+                options: options
             )
         case .aztec: makeAztecFilter(
                 rawValue: rawValue,
-                correctionLevel: correctionLevel,
-                isCompactStyle: isCompactStyle
+                correctionLevel: options.correctionLevel,
+                isCompactStyle: options.isCompactStyle
             )
         case .dataMatrix: nil
         default: makeCode128Filter(rawValue: rawValue)
@@ -180,22 +175,19 @@ enum BarcodeGenerator {
 
     private nonisolated static func makePDF417Filter(
         rawValue: String,
-        correctionLevel: String?,
-        isCompactStyle: Bool,
-        compactionMode: String?,
-        columnCount: Int?
+        options: Options
     ) -> CIFilter {
         let filter = CIFilter.pdf417BarcodeGenerator()
         filter.message = Data(rawValue.utf8)
-        if let level = correctionLevel, let intLevel = Int(level) {
+        if let level = options.correctionLevel, let intLevel = Int(level) {
             filter.correctionLevel = Float(intLevel)
         }
-        if let mode = compactionMode,
+        if let mode = options.compactionMode,
            let compaction = PDF417CompactionMode(rawValue: mode) {
             filter.compactionMode = compaction.filterValue
         }
-        filter.compactStyle = isCompactStyle ? 1 : 0
-        if let cols = columnCount, cols > 0 {
+        filter.compactStyle = options.isCompactStyle ? 1 : 0
+        if let cols = options.columnCount, cols > 0 {
             filter.dataColumns = Float(cols)
         }
         return filter

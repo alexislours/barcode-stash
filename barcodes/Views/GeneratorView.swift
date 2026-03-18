@@ -124,15 +124,18 @@ struct GeneratorView: View {
                 let compactionMode = barcode.compactionMode
                 let columnCount = barcode.columnCount
 
+                let opts = BarcodeGenerator.Options(
+                    correctionLevel: correctionLevel,
+                    isCompactStyle: isCompactStyle,
+                    compactionMode: compactionMode,
+                    columnCount: columnCount
+                )
                 let generated = await Task.detached {
                     BarcodeGenerator.generateImage(
                         rawValue: rawValue,
                         type: type,
                         descriptorArchive: nil,
-                        correctionLevel: correctionLevel,
-                        isCompactStyle: isCompactStyle,
-                        compactionMode: compactionMode,
-                        columnCount: columnCount,
+                        options: opts,
                         size: size
                     )
                 }.value
