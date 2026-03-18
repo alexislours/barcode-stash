@@ -48,7 +48,6 @@ extension HistoryView {
 
     var editingTagButton: some View {
         Button {
-            batchTagText = ""
             showBatchTagSheet = true
         } label: {
             Image(systemName: "tag")
@@ -156,32 +155,14 @@ extension HistoryView {
     // MARK: - Batch Tag Sheet
 
     var batchTagSheet: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    TextField("Tags (comma-separated)", text: $batchTagText)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                } footer: {
-                    Text("Tags will be added to \(selectedBarcodeIDs.count) selected barcodes.")
-                }
-            }
-            .navigationTitle("Add Tags")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { showBatchTagSheet = false }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Add") {
-                        batchTag()
-                        showBatchTagSheet = false
-                    }
-                    .disabled(batchTagText.trimmingCharacters(in: .whitespaces).isEmpty)
-                }
-            }
-        }
-        .presentationDetents([.medium])
+        BatchTagSheet(
+            selectedCount: selectedBarcodeIDs.count,
+            onApply: { tagNames in
+                batchApplyTags(tagNames)
+                showBatchTagSheet = false
+            },
+            onCancel: { showBatchTagSheet = false }
+        )
     }
 
     // MARK: - Actions
@@ -204,12 +185,7 @@ extension HistoryView {
         finishBatchAction()
     }
 
-    func batchTag() {
-        let newTags = batchTagText
-            .split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespaces).lowercased() }
-            .filter { !$0.isEmpty }
-
+    func batchApplyTags(_ newTags: [String]) {
         guard !newTags.isEmpty else { return }
 
         for barcode in selectedBarcodes {

@@ -27,6 +27,14 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    NavigationLink {
+                        ManageTagsView()
+                    } label: {
+                        Label(String(localized: "Manage Tags", comment: "Settings: manage tags row"), systemImage: "tag")
+                    }
+                }
+
+                Section {
                     Picker(selection: $mapStyle) {
                         ForEach(MapStyleOption.allCases, id: \.self) { option in
                             Label(option.localizedName, systemImage: option.icon)

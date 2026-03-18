@@ -28,6 +28,7 @@ struct BarcodesApp: App {
     private static func makeModelContainer() -> Result<ModelContainer, any Error> {
         let schema = Schema([
             ScannedBarcode.self,
+            BarcodeTag.self,
         ])
         #if DEBUG
             let inMemory = ProcessInfo.processInfo.arguments.contains("--screenshots")

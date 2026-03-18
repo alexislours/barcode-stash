@@ -10,10 +10,10 @@ struct BarcodeDetailView: View {
     @Bindable var barcode: ScannedBarcode
     @State private var descriptionText: String = ""
     @State private var showFullscreen = false
-    @State private var newTagText = ""
-    @State private var isAddingTag = false
+    @State private var showTagPicker = false
+    @State private var showManageTags = false
     @FocusState private var notesFieldFocused: Bool
-    @FocusState private var tagFieldFocused: Bool
+    @Query(sort: \BarcodeTag.order) private var tagDefinitions: [BarcodeTag]
     @AppStorage("mapStyle") private var mapStyle: MapStyleOption = .standard
     @AppStorage("showAdvancedData") private var showAdvancedData = false
     @State private var mapPosition: MapCameraPosition = .automatic
@@ -86,9 +86,29 @@ struct BarcodeDetailView: View {
                 .padding(.horizontal)
 
                 VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Tags", comment: "Detail: tags section header")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.secondary)
+
+                        Spacer()
+
+                        Button {
+                            showManageTags = true
+                        } label: {
+                            Text("Manage", comment: "Detail: manage tags button")
+                                .font(.caption)
+                                .foregroundStyle(.tint)
+                        }
+                    }
+
                     FlowLayout(spacing: 6) {
                         ForEach(barcode.tags, id: \.self) { tag in
-                            TagChipView(tag: tag, removable: true) {
+                            TagChipView(
+                                tag: tag,
+                                color: tagDefinitions.resolveColor(for: tag),
+                                removable: true
+                            ) {
                                 withAccessibleAnimation {
                                     barcode.tags.removeAll { $0 == tag }
                                     barcode.lastModified = .now
@@ -96,34 +116,33 @@ struct BarcodeDetailView: View {
                             }
                         }
 
-                        if isAddingTag {
-                            tagInputChip
-                        } else {
-                            Button {
-                                newTagText = ""
-                                isAddingTag = true
-                                tagFieldFocused = true
-                            } label: {
-                                Label("Add Tag", systemImage: "plus")
-                                    .font(.caption.weight(.medium))
-                                    .foregroundStyle(.secondary)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(.fill.tertiary, in: Capsule())
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(String(localized: "Add tag", comment: "Detail: add tag button"))
-                            .accessibilityHint(
-                                String(
-                                    localized: "Opens a text field to add a new tag",
-                                    comment: "Detail: add tag button hint"
-                                )
-                            )
-                            .accessibilityIdentifier("add-tag-button")
+                        Button {
+                            showTagPicker = true
+                        } label: {
+                            Label("Add Tag", systemImage: "plus")
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(.fill.tertiary, in: Capsule())
                         }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(String(localized: "Add tag", comment: "Detail: add tag button"))
+                        .accessibilityIdentifier("add-tag-button")
                     }
                 }
                 .padding(.horizontal)
+                .sheet(isPresented: $showManageTags) {
+                    NavigationStack {
+                        ManageTagsView()
+                    }
+                }
+                .sheet(isPresented: $showTagPicker) {
+                    TagPickerSheet(
+                        barcode: barcode,
+                        tagDefinitions: tagDefinitions
+                    )
+                }
 
                 if let address = barcode.address {
                     HStack {
@@ -286,44 +305,10 @@ struct BarcodeDetailView: View {
 // MARK: - Private Helpers
 
 extension BarcodeDetailView {
-    var tagInputChip: some View {
-        TextField("tag", text: $newTagText)
-            .font(.caption)
-            .textInputAutocapitalization(.never)
-            .autocorrectionDisabled()
-            .focused($tagFieldFocused)
-            .frame(width: 80)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(.fill.tertiary, in: Capsule())
-            .onSubmit {
-                commitTag()
-            }
-            .onChange(of: tagFieldFocused) {
-                if !tagFieldFocused {
-                    commitTag()
-                }
-            }
-    }
-
     func commitNotes() {
         let trimmed = descriptionText.trimmingCharacters(in: .whitespacesAndNewlines)
         barcode.barcodeDescription = trimmed.isEmpty ? nil : trimmed
         barcode.lastModified = .now
-    }
-
-    func commitTag() {
-        let trimmed = newTagText
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-        if !trimmed.isEmpty, !barcode.tags.contains(trimmed) {
-            withAccessibleAnimation {
-                barcode.tags.append(trimmed)
-                barcode.lastModified = .now
-            }
-        }
-        newTagText = ""
-        isAddingTag = false
     }
 
     @ViewBuilder

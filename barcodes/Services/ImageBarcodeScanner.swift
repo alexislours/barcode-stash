@@ -1,7 +1,7 @@
 import ImageIO
 import Vision
 
-struct DetectedBarcode: Sendable, Identifiable {
+struct DetectedBarcode: Identifiable {
     nonisolated let id = UUID()
     let rawValue: String
     let type: BarcodeType

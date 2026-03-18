@@ -20,7 +20,6 @@ struct HistoryView: View {
     @State var selectedBarcodeIDs: Set<PersistentIdentifier> = []
     @State var showBatchDeleteConfirmation = false
     @State var showBatchTagSheet = false
-    @State var batchTagText = ""
     @State var batchExportFileURL: URL?
     @State var exportError: String?
     @State private var shareBarcode: ScannedBarcode?

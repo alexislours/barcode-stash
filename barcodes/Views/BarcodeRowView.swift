@@ -6,6 +6,7 @@ struct BarcodeRowView: View {
     let barcode: ScannedBarcode
     @Binding var shareBarcode: ScannedBarcode?
     @Environment(\.modelContext) private var modelContext
+    @Query(sort: \BarcodeTag.order) private var tagDefinitions: [BarcodeTag]
 
     var body: some View {
         NavigationLink(value: barcode) {
@@ -85,7 +86,7 @@ struct BarcodeRowView: View {
                 if !barcode.tags.isEmpty {
                     HStack(spacing: 4) {
                         ForEach(barcode.tags.prefix(3), id: \.self) { tag in
-                            TagChipView(tag: tag)
+                            TagChipView(tag: tag, color: tagDefinitions.resolveColor(for: tag))
                         }
                         if barcode.tags.count > 3 {
                             Text("+\(barcode.tags.count - 3)")

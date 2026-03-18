@@ -2,16 +2,21 @@ import SwiftUI
 
 struct TagChipView: View {
     let tag: String
+    var color: Color?
     var removable: Bool = false
     var onRemove: (() -> Void)?
 
     private var chipColor: Color {
+        color ?? Self.fallbackColor(for: tag)
+    }
+
+    static func fallbackColor(for tag: String) -> Color {
         let colors: [Color] = [.blue, .purple, .pink, .orange, .teal, .indigo, .mint, .cyan]
-        return colors[Self.stableHash(tag) % colors.count]
+        return colors[stableHash(tag) % colors.count]
     }
 
     /// Deterministic djb2 hash
-    private static func stableHash(_ string: String) -> Int {
+    nonisolated static func stableHash(_ string: String) -> Int {
         var hash: UInt64 = 5381
         for byte in string.utf8 {
             hash = hash &* 33 &+ UInt64(byte)

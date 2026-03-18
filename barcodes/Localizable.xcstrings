@@ -1237,7 +1237,7 @@
       }
     },
     "Add" : {
-      "comment" : "Button to confirm adding tags to selected barcodes",
+      "comment" : "Batch tag: confirm add button",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1497,7 +1497,7 @@
       }
     },
     "Add tag" : {
-      "comment" : "Detail: add tag button",
+      "comment" : "Detail: add tag button\nManage tags: add tag button\nManage tags: empty state add button",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1627,7 +1627,7 @@
       }
     },
     "Add Tags" : {
-      "comment" : "Navigation title for batch tag sheet in selection mode",
+      "comment" : "Batch tag: navigation title",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3837,7 +3837,7 @@
       }
     },
     "Cancel" : {
-      "comment" : "Image scan: cancel button",
+      "comment" : "Batch tag: cancel button\nImage scan: cancel button\nManage tags: cancel delete button\nTag form: cancel button",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4225,6 +4225,9 @@
           }
         }
       }
+    },
+    "Color" : {
+      "comment" : "Tag form: color section header"
     },
     "Column Count" : {
       "comment" : "Descriptor: column count label",
@@ -5071,6 +5074,9 @@
         }
       }
     },
+    "Create tags to organize your barcodes." : {
+      "comment" : "Manage tags: empty state description"
+    },
     "CSV" : {
       "comment" : "Export format option: CSV (technical name, do not translate)",
       "shouldTranslate" : false
@@ -5336,7 +5342,7 @@
       }
     },
     "Delete" : {
-      "comment" : "Button to delete a barcode",
+      "comment" : "Manage tags: delete confirmation button",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5920,6 +5926,9 @@
         }
       }
     },
+    "Delete Tag?" : {
+      "comment" : "Manage tags: delete confirmation title"
+    },
     "Description" : {
       "comment" : "Toggle label in share sheet to include the barcode description",
       "localizations" : {
@@ -6246,7 +6255,7 @@
       }
     },
     "Done" : {
-      "comment" : "History: exit selection mode",
+      "comment" : "Tag picker: done button",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6504,6 +6513,9 @@
           }
         }
       }
+    },
+    "Edit Tag" : {
+      "comment" : "Tag form: edit mode navigation title"
     },
     "Email" : {
       "comment" : "Action card title for email payload",
@@ -8588,6 +8600,12 @@
         }
       }
     },
+    "Manage" : {
+      "comment" : "Detail: manage tags button"
+    },
+    "Manage Tags" : {
+      "comment" : "Batch tag: manage tags link\nManage tags: navigation title\nSettings: manage tags row\nTag picker: manage tags link"
+    },
     "Map" : {
       "comment" : "Tab title for the map view showing barcode locations",
       "localizations" : {
@@ -9238,6 +9256,12 @@
         }
       }
     },
+    "Name" : {
+      "comment" : "Tag form: name section header"
+    },
+    "New Tag" : {
+      "comment" : "Batch tag: create new tag button\nTag form: create mode navigation title\nTag picker: create new tag button"
+    },
     "No" : {
       "comment" : "Descriptor: boolean false value",
       "localizations" : {
@@ -9692,6 +9716,9 @@
           }
         }
       }
+    },
+    "No Tags" : {
+      "comment" : "Manage tags: empty state title"
     },
     "Notes" : {
       "comment" : "Section header for the description/notes field on detail and generator screens",
@@ -10150,6 +10177,7 @@
     },
     "Opens a text field to add a new tag" : {
       "comment" : "Detail: add tag button hint",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11189,7 +11217,7 @@
       }
     },
     "Save" : {
-      "comment" : "Button to save a scanned or generated barcode",
+      "comment" : "Tag form: save button",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13140,6 +13168,7 @@
     },
     "tag" : {
       "comment" : "Placeholder text in the tag input field on detail screen",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13202,6 +13231,9 @@
           }
         }
       }
+    },
+    "Tag name" : {
+      "comment" : "Tag form: name field placeholder"
     },
     "Tag selected" : {
       "comment" : "History: batch tag button",
@@ -13334,7 +13366,7 @@
       }
     },
     "Tags" : {
-      "comment" : "Filter section header and detail screen label for barcode tags",
+      "comment" : "Detail: tags section header\nManage tags: section header for managed tags\nTag picker: navigation title",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13400,6 +13432,7 @@
     },
     "Tags (comma-separated)" : {
       "comment" : "Placeholder for the batch tag input field in selection mode",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13464,7 +13497,7 @@
       }
     },
     "Tags will be added to %lld selected barcodes." : {
-      "comment" : "Footer text in the batch tag sheet explaining the action",
+      "comment" : "Batch tag: footer explaining how many barcodes are affected",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13853,6 +13886,9 @@
         }
       }
     },
+    "This will delete the \"%@\" tag." : {
+      "comment" : "Manage tags: delete confirmation message for unused tag"
+    },
     "This will permanently delete all %lld barcodes. This cannot be undone." : {
       "comment" : "Confirmation message in the delete-all alert in settings",
       "localizations" : {
@@ -13914,6 +13950,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "這將永久刪除所有 %lld 個條碼。此動作無法復原。"
+          }
+        }
+      }
+    },
+    "This will remove \"%@\" from %lld barcode(s)." : {
+      "comment" : "Manage tags: delete confirmation message with usage count",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This will remove \"%1$@\" from %2$lld barcode(s)."
           }
         }
       }
